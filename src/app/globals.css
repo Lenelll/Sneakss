@@ -1,26 +1,127 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --canvas: #f5f2ea;
+  --surface: #ffffff;
+  --ink: #151713;
+  --muted: #686b64;
+  --line: #d8d8d0;
+  --vault: #0e4e3e;
+  --vault-dark: #08382c;
+  --gold: #e0b33d;
+  --error: #b42318;
+  --font-ui: "Segoe UI", Arial, Helvetica, sans-serif;
+  --font-code: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+  --background: var(--canvas);
+  --foreground: var(--ink);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-vault: var(--vault);
+  --color-vault-dark: var(--vault-dark);
+  --color-gold: var(--gold);
+  --color-error: var(--error);
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-code);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-ui);
+  margin: 0;
+  min-width: 320px;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--gold);
+  color: var(--ink);
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+select {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 2px solid var(--vault);
+  outline-offset: 3px;
+}
+
+.page-shell {
+  margin-inline: auto;
+  max-width: 90rem;
+  padding-inline: clamp(1.25rem, 4vw, 4rem);
+}
+
+.display-type {
+  font-size: clamp(3rem, 8vw, 7.5rem);
+  font-weight: 550;
+  letter-spacing: -0.075em;
+  line-height: 0.86;
+}
+
+.section-title {
+  font-size: clamp(2rem, 4vw, 4.5rem);
+  font-weight: 550;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+}
+
+.eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-up {
+    animation: reveal-up 700ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  }
+
+  .reveal-up-delayed {
+    animation: reveal-up 700ms 120ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+  }
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

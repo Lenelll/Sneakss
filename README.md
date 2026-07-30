@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sneaker Vault GH
 
-## Getting Started
+Headless ecommerce storefront for a Ghana-based sneaker reseller. The app uses
+Next.js, TypeScript, and Tailwind CSS, with Shopify planned as the source of
+truth for products, size-level inventory, customers, carts, and orders.
 
-First, run the development server:
+## Current build
+
+The storefront currently runs in a deliberate preview mode:
+
+- 12 fictional products with EU size variants and GHS prices
+- responsive home, shop, product, cart, account, and checkout routes
+- local demo cart state for testing the full browsing flow
+- informational and draft policy pages
+- Shopify and Paystack integration gates that never simulate a real order
+
+Official products, photography, logo files, contact details, and approved legal
+copy still need to replace the temporary content before launch.
+
+## Run locally
 
 ```bash
+npm install
+copy .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Validation commands:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run lint
+npx tsc --noEmit
+npm run build
+```
 
-## Learn More
+## Connect the Shopify Headless channel
 
-To learn more about Next.js, take a look at the following resources:
+Shopify requires its Headless sales channel for a bring-your-own-stack
+storefront. When you are ready to connect the existing store:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. In Shopify Admin, install the **Headless** channel from the Shopify App
+   Store.
+2. Open **Sales channels → Headless** and select **Add storefront**.
+3. Name it `Sneaker Vault GH Web`.
+4. In **Manage API access**, enable the Storefront API permissions needed for
+   products, variants, inventory availability, carts, and checkout.
+5. Copy the store domain and the server-only private Storefront token into
+   `.env.local`, following `.env.example`.
+6. Enable Shopify **Customer accounts**, then add the production and local
+   callback URLs for the Customer Account API client.
+7. Publish the real products to the Headless sales channel.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The private Storefront token, Customer Account client secret, and webhook
+secret must remain server-only. Never prefix them with `NEXT_PUBLIC_`.
 
-## Deploy on Vercel
+Official references:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- [Bring your own headless stack](https://shopify.dev/docs/storefronts/headless/bring-your-own-stack)
+- [Manage the Headless channel](https://shopify.dev/docs/storefronts/headless/building-with-the-storefront-api/manage-headless-channels)
+- [Shopify customer accounts](https://help.shopify.com/en/manual/customers/customer-accounts/new-customer-accounts)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Configure Paystack
+
+Paystack belongs inside Shopify checkout, not in the Next.js frontend:
+
+1. In Shopify Admin, open **Settings → Payments**.
+2. Install or activate the current Paystack payment app.
+3. Connect the client’s Paystack test account and keep the integration in test
+   mode.
+4. Verify a full test order, webhook/payment status, refund flow, and GHS
+   settlement before enabling live payments.
+
+Do not add a Paystack secret key to this project. See Paystack’s
+[Shopify setup guide](https://support.paystack.com/en/articles/2132226).
+
+## Content ownership
+
+`sneakervaultgh` is the production codebase. Private reference material is not
+part of this project; none of its code, assets, wording, or brand identifiers
+may be copied into the storefront.

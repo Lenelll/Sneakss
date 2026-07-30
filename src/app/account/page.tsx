@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import {
+  customerAccountFetch,
+  getCustomerSession,
+  isCustomerAuthConfigured,
+} from "@/lib/shopify/customer-auth";
 import { AccountAccess } from "./account-access";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Account",
@@ -8,7 +15,52 @@ export const metadata: Metadata = {
     "Access your Sneaker Vault GH customer account with a secure email code.",
 };
 
-export default function AccountPage() {
+type AccountPageProps = {
+  searchParams: Promise<{ auth?: string | string[] }>;
+};
+
+type CustomerOverview = {
+  customer: {
+    firstName: string | null;
+    lastName: string | null;
+    emailAddress: { emailAddress: string } | null;
+  } | null;
+};
+
+export default async function AccountPage({
+  searchParams,
+}: AccountPageProps) {
+  const session = await getCustomerSession();
+  const params = await searchParams;
+  let customerName = "";
+  let customerEmail = "";
+
+  if (session) {
+    try {
+      const data = await customerAccountFetch<CustomerOverview>(
+        session.accessToken,
+        `query CustomerOverview {
+          customer {
+            firstName
+            lastName
+            emailAddress {
+              emailAddress
+            }
+          }
+        }`,
+      );
+      customerName = [
+        data.customer?.firstName,
+        data.customer?.lastName,
+      ]
+        .filter(Boolean)
+        .join(" ");
+      customerEmail = data.customer?.emailAddress?.emailAddress ?? "";
+    } catch {
+      // A valid session can still render safely if profile lookup is delayed.
+    }
+  }
+
   return (
     <main className="bg-[#F5F2EA] text-[#151713]">
       <section className="mx-auto grid min-h-[calc(100svh-8rem)] w-full max-w-[90rem] gap-10 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,30rem)] lg:items-center lg:px-12 lg:py-20">
@@ -59,7 +111,16 @@ export default function AccountPage() {
           </div>
         </div>
 
-        <AccountAccess />
+        <AccountAccess
+          authError={
+            (Array.isArray(params.auth) ? params.auth[0] : params.auth) ===
+            "error"
+          }
+          configured={isCustomerAuthConfigured()}
+          customerEmail={customerEmail}
+          customerName={customerName}
+          signedIn={Boolean(session)}
+        />
       </section>
     </main>
   );

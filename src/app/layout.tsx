@@ -2,9 +2,12 @@ import type { Metadata, Viewport } from "next";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { StoreProvider } from "@/components/store-provider";
+import { getCommerceReadiness } from "@/lib/commerce";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -60,10 +63,16 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const commerce = getCommerceReadiness();
+
   return (
     <html lang="en-GH">
       <body>
-        <StoreProvider>
+        <StoreProvider
+          initialMode={
+            commerce.storefrontConnected ? "shopify" : "demo"
+          }
+        >
           <a
             href="#main-content"
             className="fixed left-4 top-4 z-[100] -translate-y-24 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-ink shadow-lg transition-transform focus:translate-y-0"

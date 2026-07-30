@@ -14,6 +14,9 @@ export function CartDrawer() {
     lines,
     itemCount,
     subtotal,
+    mode,
+    isPending,
+    cartError,
     isCartOpen,
     closeCart,
     updateQuantity,
@@ -80,7 +83,7 @@ export function CartDrawer() {
               Your next pair is still out there.
             </p>
             <p className="mt-3 max-w-sm text-sm leading-6 text-[#686B64]">
-              Explore the demo catalog and choose an available EU size to start
+              Explore the collection and choose an available EU size to start
               your bag.
             </p>
             <Link
@@ -93,6 +96,14 @@ export function CartDrawer() {
           </div>
         ) : (
           <>
+            {cartError ? (
+              <p
+                className="mx-5 mt-5 rounded-xl border border-[#E0B33D]/50 bg-[#FFF9E8] p-3 text-xs leading-5 text-[#584814] sm:mx-7"
+                role="alert"
+              >
+                {cartError}
+              </p>
+            ) : null}
             <ul className="flex-1 space-y-5 overflow-y-auto px-5 py-6 sm:px-7">
               {lines.map((line) => (
                 <li
@@ -143,7 +154,7 @@ export function CartDrawer() {
                           type="button"
                           aria-label={`Decrease ${line.product.title} quantity`}
                           className="h-9 w-9 text-lg transition-colors hover:bg-[#F5F2EA] disabled:cursor-not-allowed disabled:opacity-40"
-                          disabled={line.quantity <= 1}
+                          disabled={isPending || line.quantity <= 1}
                           onClick={() =>
                             updateQuantity(line.variantId, line.quantity - 1)
                           }
@@ -162,7 +173,8 @@ export function CartDrawer() {
                           className="h-9 w-9 text-lg transition-colors hover:bg-[#F5F2EA] disabled:cursor-not-allowed disabled:opacity-40"
                           disabled={
                             line.quantity >=
-                            Math.min(line.variant.inventoryQuantity, 10)
+                              Math.min(line.variant.inventoryQuantity, 10) ||
+                            isPending
                           }
                           onClick={() =>
                             updateQuantity(line.variantId, line.quantity + 1)
@@ -174,6 +186,7 @@ export function CartDrawer() {
                       <button
                         type="button"
                         className="text-xs font-semibold text-[#686B64] underline decoration-[#D8D8D0] underline-offset-4 hover:text-[#151713]"
+                        disabled={isPending}
                         onClick={() => removeItem(line.variantId)}
                       >
                         Remove
@@ -201,8 +214,9 @@ export function CartDrawer() {
                 Review bag
               </Link>
               <p className="mt-3 text-center text-[0.68rem] leading-5 text-[#686B64]">
-                Demo bag only. Payment remains disabled until Shopify and
-                Paystack are connected.
+                {mode === "shopify"
+                  ? "Live inventory is confirmed again at Shopify checkout."
+                  : "Preview bag only. Demo products cannot be purchased."}
               </p>
             </div>
           </>

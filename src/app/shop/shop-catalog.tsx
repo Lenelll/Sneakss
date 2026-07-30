@@ -7,9 +7,9 @@ import {
   EU_SIZE_SCALE,
   PRODUCT_CATEGORIES,
   filterProducts,
-  products,
   type AvailabilityFilter,
   type EuSize,
+  type Product,
   type ProductCategory,
   type ProductSort,
 } from "@/lib";
@@ -26,12 +26,14 @@ type CategorySelection = ProductCategory | "all";
 type SizeSelection = EuSize | "all";
 
 type ShopCatalogProps = {
+  catalog: readonly Product[];
   initialQuery?: string;
   initialSize?: EuSize;
   initialSort?: ProductSort;
 };
 
 export function ShopCatalog({
+  catalog,
   initialQuery = "",
   initialSize,
   initialSort = "featured",
@@ -46,33 +48,36 @@ export function ShopCatalog({
 
   const brands = useMemo(
     () =>
-      Array.from(new Set(products.map((product) => product.brand))).sort(
+      Array.from(new Set(catalog.map((product) => product.brand))).sort(
         (a, b) => a.localeCompare(b),
       ),
-    [],
+    [catalog],
   );
 
   const stockedSizes = useMemo(
     () =>
       EU_SIZE_SCALE.filter((candidate) =>
-        products.some((product) =>
+        catalog.some((product) =>
           product.variants.some((variant) => variant.size === candidate),
         ),
       ),
-    [],
+    [catalog],
   );
 
   const filteredProducts = useMemo(
     () =>
-      filterProducts({
-        query,
-        categories: category === "all" ? undefined : [category],
-        brands: brand === "all" ? undefined : [brand],
-        sizes: size === "all" ? undefined : [size],
-        availability,
-        sort,
-      }),
-    [availability, brand, category, query, size, sort],
+      filterProducts(
+        {
+          query,
+          categories: category === "all" ? undefined : [category],
+          brands: brand === "all" ? undefined : [brand],
+          sizes: size === "all" ? undefined : [size],
+          availability,
+          sort,
+        },
+        catalog,
+      ),
+    [availability, brand, catalog, category, query, size, sort],
   );
 
   const hasActiveFilters =

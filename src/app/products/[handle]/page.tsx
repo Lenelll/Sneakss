@@ -4,10 +4,13 @@ import { notFound } from "next/navigation";
 
 import { ProductCard } from "@/components/product-card";
 import {
-  getProductByHandle,
   getRelatedProducts,
   products,
 } from "@/lib";
+import {
+  getCommerceCatalog,
+  getCommerceProduct,
+} from "@/lib/catalog-source";
 
 import { ProductDetail } from "./product-detail";
 
@@ -23,7 +26,7 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { handle } = await params;
-  const product = getProductByHandle(handle);
+  const { product } = await getCommerceProduct(handle);
 
   if (!product) {
     return {
@@ -33,7 +36,9 @@ export async function generateMetadata({
 
   return {
     title: product.title,
-    description: `${product.description} Temporary demo product shown in ${product.variants[0]?.sizeLabel ?? "EU sizing"}.`,
+    description: product.isDemo
+      ? `${product.description} Temporary preview product shown in ${product.variants[0]?.sizeLabel ?? "EU sizing"}.`
+      : product.description,
     openGraph: {
       title: `${product.title} | Sneaker Vault GH`,
       description: product.description,
@@ -49,13 +54,14 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { handle } = await params;
-  const product = getProductByHandle(handle);
+  const { product } = await getCommerceProduct(handle);
 
   if (!product) {
     notFound();
   }
 
-  const relatedProducts = getRelatedProducts(product, 3);
+  const catalog = await getCommerceCatalog();
+  const relatedProducts = getRelatedProducts(product, 3, catalog.products);
 
   return (
     <main className="min-h-screen bg-[#F5F2EA] text-[#151713]">

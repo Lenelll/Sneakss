@@ -40,7 +40,7 @@ export type ProductCurrency = "GHS";
 
 export interface ProductImage {
   readonly id: string;
-  readonly src: `/images/products/${string}`;
+  readonly src: string;
   readonly alt: string;
 }
 
@@ -76,7 +76,7 @@ export interface Product {
   readonly status: ProductStatus;
   readonly isFeatured: boolean;
   readonly isNewArrival: boolean;
-  readonly isDemo: true;
+  readonly isDemo: boolean;
   readonly publishedAt: string;
 }
 

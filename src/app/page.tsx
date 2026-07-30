@@ -2,14 +2,30 @@ import Image from "next/image";
 import Link from "next/link";
 import { ProductCard } from "@/components/product-card";
 import { EU_SIZE_SCALE, getFeaturedProducts, getNewArrivals } from "@/lib";
+import { getCommerceCatalog } from "@/lib/catalog-source";
 
-const featuredProducts = getFeaturedProducts(4);
-const newArrivals = getNewArrivals(4);
 const popularSizes = EU_SIZE_SCALE.filter(
   (size) => size >= 38 && size <= 45 && Number.isInteger(size),
 );
 
-export default function HomePage() {
+export default async function HomePage() {
+  const catalog = await getCommerceCatalog();
+  const taggedFeatured = getFeaturedProducts(4, catalog.products);
+  const taggedNewArrivals = getNewArrivals(4, catalog.products);
+  const featuredProducts =
+    taggedFeatured.length > 0
+      ? taggedFeatured
+      : catalog.products.slice(0, 4);
+  const newArrivals =
+    taggedNewArrivals.length > 0
+      ? taggedNewArrivals
+      : [...catalog.products]
+          .sort(
+            (a, b) =>
+              Date.parse(b.publishedAt) - Date.parse(a.publishedAt),
+          )
+          .slice(0, 4);
+
   return (
     <main className="overflow-hidden">
       <section className="page-shell py-5 sm:py-8">
@@ -18,7 +34,10 @@ export default function HomePage() {
             <div className="reveal-up flex items-center gap-3">
               <span className="h-2.5 w-2.5 rounded-full bg-gold" />
               <p className="eyebrow text-white/70">
-                Accra, Ghana · Demo collection
+                Accra, Ghana ·{" "}
+                {catalog.source === "shopify"
+                  ? "Live collection"
+                  : "Preview collection"}
               </p>
             </div>
 
@@ -47,10 +66,11 @@ export default function HomePage() {
               </div>
             </div>
 
-            <p className="max-w-sm text-xs leading-5 text-white/55">
-              Temporary products and images are being used while the official
-              Sneaker Vault GH catalogue is prepared.
-            </p>
+            {catalog.notice ? (
+              <p className="max-w-sm text-xs leading-5 text-white/55">
+                {catalog.notice}
+              </p>
+            ) : null}
           </div>
 
           <div className="relative min-h-[29rem] overflow-hidden bg-[#e8e0d1] lg:min-h-full">

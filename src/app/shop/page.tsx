@@ -4,6 +4,7 @@ import {
   type EuSize,
   type ProductSort,
 } from "@/lib";
+import { getCommerceCatalog } from "@/lib/catalog-source";
 
 import { ShopCatalog } from "./shop-catalog";
 
@@ -34,6 +35,7 @@ function firstValue(value: string | string[] | undefined) {
 }
 
 export default async function ShopPage({ searchParams }: ShopPageProps) {
+  const catalog = await getCommerceCatalog();
   const params = await searchParams;
   const initialQuery = firstValue(params.q)?.trim() ?? "";
   const requestedSize = Number(firstValue(params.size));
@@ -53,24 +55,29 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
         <div className="mx-auto max-w-[1440px]">
           <div className="mb-5 flex flex-wrap items-center gap-3">
             <span className="rounded-full bg-[#E0B33D] px-3 py-1 text-[11px] font-bold tracking-[0.16em] text-[#151713] uppercase">
-              Demo catalogue
+              {catalog.source === "shopify"
+                ? "Live catalogue"
+                : "Preview catalogue"}
             </span>
             <span className="text-xs font-semibold tracking-[0.14em] text-[#686B64] uppercase">
-              Temporary products · EU sizing
+              {catalog.source === "shopify"
+                ? "Shopify inventory · EU sizing"
+                : "Temporary products · EU sizing"}
             </span>
           </div>
           <h1 className="max-w-4xl text-5xl leading-[0.94] font-semibold tracking-[-0.055em] sm:text-7xl lg:text-8xl">
             Find your next pair.
           </h1>
           <p className="mt-7 max-w-2xl text-base leading-7 text-[#5A5E56] sm:text-lg">
-            Explore the shape of the future Sneaker Vault GH collection. These
-            fictional products let you test browsing, size selection and cart
-            flows before the official catalogue arrives.
+            {catalog.source === "shopify"
+              ? "Browse current pairs and live EU size availability from the Sneaker Vault GH inventory."
+              : catalog.notice}
           </p>
         </div>
       </section>
 
       <ShopCatalog
+        catalog={catalog.products}
         key={catalogKey}
         initialQuery={initialQuery}
         initialSize={initialSize}

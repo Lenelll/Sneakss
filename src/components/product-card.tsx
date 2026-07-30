@@ -34,9 +34,13 @@ export function ProductCard({
           className="object-cover transition duration-500 ease-out group-hover:scale-[1.035]"
         />
         <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
-          <span className="rounded-full bg-white/92 px-3 py-1.5 text-[0.6rem] font-semibold tracking-[0.14em] text-[#686B64] uppercase shadow-sm backdrop-blur">
-            Demo
-          </span>
+          {product.isDemo ? (
+            <span className="rounded-full bg-white/92 px-3 py-1.5 text-[0.6rem] font-semibold tracking-[0.14em] text-[#686B64] uppercase shadow-sm backdrop-blur">
+              Demo
+            </span>
+          ) : (
+            <span aria-hidden="true" />
+          )}
           {product.isNewArrival && (
             <span className="rounded-full bg-[#0E4E3E] px-3 py-1.5 text-[0.6rem] font-semibold tracking-[0.14em] text-white uppercase">
               New

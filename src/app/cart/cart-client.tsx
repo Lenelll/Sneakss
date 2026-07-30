@@ -10,7 +10,10 @@ export function CartClient() {
     lines,
     itemCount,
     subtotal,
+    mode,
     isHydrated,
+    isPending,
+    cartError,
     updateQuantity,
     removeItem,
   } = useStore();
@@ -36,14 +39,14 @@ export function CartClient() {
           The vault is empty.
         </h1>
         <p className="mt-5 max-w-lg text-base leading-7 text-[#686B64]">
-          Explore the temporary catalog, choose an available EU size, and add
-          a pair to see the full cart experience.
+          Explore the collection, choose an available EU size, and add a pair
+          to continue.
         </p>
         <Link
           className="mt-8 rounded-xl bg-[#0E4E3E] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#123F35] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E4E3E]"
           href="/shop"
         >
-          Shop demo collection
+          Shop the collection
         </Link>
       </section>
     );
@@ -69,6 +72,15 @@ export function CartClient() {
       </div>
 
       <div className="grid gap-10 pt-8 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-14">
+        <div>
+          {cartError ? (
+            <p
+              className="mb-6 rounded-2xl border border-[#E0B33D]/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]"
+              role="alert"
+            >
+              {cartError}
+            </p>
+          ) : null}
         <ul className="divide-y divide-[#D8D8D0]">
           {lines.map((line) => (
             <li
@@ -118,7 +130,7 @@ export function CartClient() {
                     <button
                       aria-label={`Decrease ${line.product.title} quantity`}
                       className="flex size-10 items-center justify-center text-lg transition hover:bg-[#F5F2EA] disabled:cursor-not-allowed disabled:opacity-40"
-                      disabled={line.quantity <= 1}
+                      disabled={isPending || line.quantity <= 1}
                       onClick={() =>
                         updateQuantity(line.variantId, line.quantity - 1)
                       }
@@ -137,7 +149,8 @@ export function CartClient() {
                       className="flex size-10 items-center justify-center text-lg transition hover:bg-[#F5F2EA] disabled:cursor-not-allowed disabled:opacity-40"
                       disabled={
                         line.quantity >= line.variant.inventoryQuantity ||
-                        line.quantity >= 10
+                        line.quantity >= 10 ||
+                        isPending
                       }
                       onClick={() =>
                         updateQuantity(line.variantId, line.quantity + 1)
@@ -150,6 +163,7 @@ export function CartClient() {
 
                   <button
                     className="text-sm text-[#686B64] underline underline-offset-4 transition hover:text-[#B42318]"
+                    disabled={isPending}
                     onClick={() => removeItem(line.variantId)}
                     type="button"
                   >
@@ -160,6 +174,7 @@ export function CartClient() {
             </li>
           ))}
         </ul>
+        </div>
 
         <aside className="h-fit rounded-3xl bg-[#0E4E3E] p-6 text-white sm:p-7 lg:sticky lg:top-28">
           <p className="text-xs font-semibold tracking-[0.16em] text-[#E0B33D] uppercase">
@@ -172,8 +187,9 @@ export function CartClient() {
             </span>
           </div>
           <p className="mt-5 text-xs leading-5 text-white/65">
-            Products and inventory in this build are temporary demo data.
-            Shopify will become the source of truth before launch.
+            {mode === "shopify"
+              ? "Live prices and size availability come from Shopify and are confirmed again at checkout."
+              : "This preview bag uses temporary products and cannot create a real order."}
           </p>
           <Link
             className="mt-6 block rounded-xl bg-[#E0B33D] px-5 py-3.5 text-center text-sm font-semibold text-[#151713] transition hover:bg-[#E7BF56] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"

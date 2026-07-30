@@ -8,13 +8,32 @@ import { formatGHS } from "@/lib";
 type CheckoutClientProps = {
   storefrontConnected: boolean;
   customerAccountsConnected: boolean;
+  signedIn: boolean;
+  checkoutError?: string;
 };
 
 export function CheckoutClient({
   storefrontConnected,
   customerAccountsConnected,
+  signedIn,
+  checkoutError,
 }: CheckoutClientProps) {
-  const { lines, itemCount, subtotal, isHydrated } = useStore();
+  const {
+    lines,
+    itemCount,
+    subtotal,
+    mode,
+    isHydrated,
+    isPending,
+    cartError,
+  } = useStore();
+  const isLiveCart = mode === "shopify";
+  const canCheckout =
+    isLiveCart &&
+    storefrontConnected &&
+    customerAccountsConnected &&
+    signedIn &&
+    lines.length > 0;
 
   if (!isHydrated) {
     return (
@@ -31,14 +50,14 @@ export function CheckoutClient({
     return (
       <section className="mx-auto flex min-h-[32rem] max-w-[90rem] flex-col items-start justify-center px-5 py-16 sm:px-8 lg:px-12">
         <p className="text-xs font-semibold tracking-[0.18em] text-[#0E4E3E] uppercase">
-          Checkout preview
+          Checkout
         </p>
         <h1 className="mt-4 text-5xl font-semibold tracking-[-0.055em] sm:text-6xl">
           Your bag is empty.
         </h1>
         <p className="mt-5 max-w-lg text-base leading-7 text-[#686B64]">
-          Add a demo product and select an EU size before reviewing the
-          checkout handoff.
+          Choose an available EU size before continuing to secure Shopify
+          checkout.
         </p>
         <Link
           className="mt-8 rounded-xl bg-[#0E4E3E] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#123F35]"
@@ -54,62 +73,93 @@ export function CheckoutClient({
     <section className="mx-auto w-full max-w-[90rem] px-5 py-12 sm:px-8 lg:px-12 lg:py-16">
       <div className="max-w-3xl">
         <p className="text-xs font-semibold tracking-[0.18em] text-[#0E4E3E] uppercase">
-          Checkout preview
+          Secure checkout
         </p>
         <h1 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-balance sm:text-6xl">
-          Review now. Pay securely after Shopify is connected.
+          Review your pair, then continue with Shopify.
         </h1>
         <p className="mt-5 max-w-2xl text-base leading-7 text-[#686B64]">
-          This page proves the order-summary experience only. It does not
-          create an order, reserve inventory, sign in a customer, or collect
-          payment.
+          A customer account is required. Shopify confirms live inventory and
+          hands payment to Paystack inside its secure checkout.
         </p>
       </div>
+
+      {(checkoutError || cartError) && (
+        <p
+          className="mt-8 rounded-2xl border border-[#E0B33D]/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]"
+          role="alert"
+        >
+          {checkoutError || cartError}
+        </p>
+      )}
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_25rem] lg:items-start lg:gap-14">
         <div>
           <div className="rounded-3xl border border-[#D8D8D0] bg-white p-6 sm:p-8">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-xl font-semibold tracking-[-0.025em]">
-                Integration gate
+                Checkout readiness
               </h2>
-              <span className="rounded-full bg-[#FFF3CC] px-3 py-1 text-xs font-semibold text-[#6D5711]">
-                Not live
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                  canCheckout
+                    ? "bg-[#DCEDE7] text-[#0E4E3E]"
+                    : "bg-[#FFF3CC] text-[#6D5711]"
+                }`}
+              >
+                {canCheckout ? "Ready" : "Action needed"}
               </span>
             </div>
 
             <ul className="mt-6 grid gap-4">
               <StatusRow
-                connected={customerAccountsConnected}
-                description="Required passwordless email-code access will be provided by Shopify Customer Accounts."
+                connected={signedIn}
+                description={
+                  customerAccountsConnected
+                    ? "Shopify hosts the passwordless email-code sign-in."
+                    : "The final callback URL and encrypted session secret still need configuration."
+                }
                 label="Customer account"
               />
               <StatusRow
-                connected={storefrontConnected}
-                description="Products, inventory, cart, and orders will move from demo data to Shopify."
+                connected={isLiveCart && storefrontConnected}
+                description={
+                  isLiveCart
+                    ? "Products, EU size inventory, and this cart come from Shopify."
+                    : "This is a preview cart, so a real order cannot be created."
+                }
                 label="Shopify Headless"
               />
               <StatusRow
-                connected={false}
-                description="Paystack will be enabled inside Shopify and verified in test mode before checkout is opened."
+                connected
+                description="Paystack test mode is configured inside Shopify checkout; a full test order is still required before launch."
                 label="Paystack payment"
               />
             </ul>
 
-            <Link
-              className="mt-7 inline-flex text-sm font-semibold text-[#0E4E3E] underline decoration-[#E0B33D] decoration-2 underline-offset-4"
-              href="/account"
-            >
-              Preview customer account access
-            </Link>
+            {!signedIn && customerAccountsConnected ? (
+              <Link
+                className="mt-7 inline-flex rounded-xl bg-[#0E4E3E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#123F35]"
+                href="/account/auth/login?returnTo=/checkout"
+              >
+                Sign in to continue
+              </Link>
+            ) : (
+              <Link
+                className="mt-7 inline-flex text-sm font-semibold text-[#0E4E3E] underline decoration-[#E0B33D] decoration-2 underline-offset-4"
+                href="/account"
+              >
+                View customer account
+              </Link>
+            )}
           </div>
 
           <div className="mt-6 rounded-3xl bg-[#EEEAE0] p-6 sm:p-8">
-            <h2 className="text-lg font-semibold">Launch behaviour</h2>
+            <h2 className="text-lg font-semibold">Delivery</h2>
             <p className="mt-3 text-sm leading-6 text-[#686B64]">
-              After the integrations are complete, checkout will require
-              sign-in, verify live Shopify inventory, and hand payment to
-              Shopify with Paystack configured as the provider.
+              Delivery is fulfilled separately by Sneaker Vault GH&apos;s
+              delivery partner. This storefront does not dispatch or track
+              deliveries.
             </p>
           </div>
         </div>
@@ -158,20 +208,33 @@ export function CheckoutClient({
             </div>
           </dl>
 
-          <button
-            aria-describedby="checkout-disabled-reason"
-            className="mt-7 w-full cursor-not-allowed rounded-xl bg-white/15 px-5 py-3.5 text-sm font-semibold text-white/70"
-            disabled
-            type="button"
-          >
-            Secure checkout unavailable
-          </button>
+          {canCheckout ? (
+            <form action="/api/cart/checkout" method="post">
+              <button
+                className="mt-7 w-full rounded-xl bg-[#E0B33D] px-5 py-3.5 text-sm font-semibold text-[#151713] transition hover:bg-[#E7BF56] disabled:cursor-wait disabled:opacity-70"
+                disabled={isPending}
+                type="submit"
+              >
+                Continue to secure checkout
+              </button>
+            </form>
+          ) : (
+            <button
+              aria-describedby="checkout-disabled-reason"
+              className="mt-7 w-full cursor-not-allowed rounded-xl bg-white/15 px-5 py-3.5 text-sm font-semibold text-white/70"
+              disabled
+              type="button"
+            >
+              Checkout unavailable
+            </button>
+          )}
           <p
             className="mt-3 text-xs leading-5 text-white/65"
             id="checkout-disabled-reason"
           >
-            Shopify Customer Accounts and the Shopify/Paystack checkout must
-            be connected and tested first.
+            {canCheckout
+              ? "You will leave this storefront for Shopify checkout."
+              : "Use a live Shopify cart and sign in before checkout."}
           </p>
           <Link
             className="mt-5 block text-center text-sm text-white underline underline-offset-4"
@@ -206,7 +269,7 @@ function StatusRow({
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-sm font-semibold">{label}</p>
           <span className="text-[0.68rem] font-semibold tracking-[0.08em] text-[#686B64] uppercase">
-            {connected ? "Environment ready" : "Connection required"}
+            {connected ? "Ready" : "Required"}
           </span>
         </div>
         <p className="mt-1 text-sm leading-6 text-[#686B64]">{description}</p>

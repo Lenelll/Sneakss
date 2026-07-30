@@ -25,14 +25,18 @@ export function ProductDetail({ product }: Readonly<{ product: Product }>) {
     (variant) => variant.id === selectedVariantId,
   );
 
-  function handleAddToBag() {
+  async function handleAddToBag() {
     if (!selectedVariant?.availableForSale) {
       setMessage("Choose an available EU size first.");
       return;
     }
 
-    addItem(product.id, selectedVariant.id, 1);
-    setMessage(`${selectedVariant.sizeLabel} added to your demo bag.`);
+    const added = await addItem(product, selectedVariant, 1);
+    setMessage(
+      added
+        ? `${selectedVariant.sizeLabel} added to your bag.`
+        : "We could not add that size. Please try again.",
+    );
   }
 
   return (
@@ -48,9 +52,11 @@ export function ProductDetail({ product }: Readonly<{ product: Product }>) {
               sizes="(min-width: 1024px) 58vw, 100vw"
               className="object-cover transition-transform duration-700 hover:scale-[1.015]"
             />
-            <span className="absolute top-4 left-4 rounded-full bg-[#E0B33D] px-3 py-1.5 text-[10px] font-bold tracking-[0.14em] text-[#151713] uppercase shadow-sm sm:top-6 sm:left-6">
-              Demo product
-            </span>
+            {product.isDemo ? (
+              <span className="absolute top-4 left-4 rounded-full bg-[#E0B33D] px-3 py-1.5 text-[10px] font-bold tracking-[0.14em] text-[#151713] uppercase shadow-sm sm:top-6 sm:left-6">
+                Demo product
+              </span>
+            ) : null}
           </div>
 
           <div className="mt-4 grid grid-cols-2 gap-4">
@@ -75,7 +81,7 @@ export function ProductDetail({ product }: Readonly<{ product: Product }>) {
               {product.brand}
             </p>
             <p className="text-xs font-semibold text-[#686B64]">
-              {getTotalInventory(product)} demo units
+              {getTotalInventory(product)} units available
             </p>
           </div>
 
@@ -178,16 +184,18 @@ export function ProductDetail({ product }: Readonly<{ product: Product }>) {
                 </div>
               </div>
             </details>
-            <details className="group px-5 py-4">
-              <summary className="cursor-pointer list-none text-sm font-bold">
-                About this catalogue
-              </summary>
-              <p className="pt-3 text-sm leading-6 text-[#686B64]">
-                This is fictional development inventory. Official photos,
-                products, prices and stock will replace it when Shopify is
-                connected.
-              </p>
-            </details>
+            {product.isDemo ? (
+              <details className="group px-5 py-4">
+                <summary className="cursor-pointer list-none text-sm font-bold">
+                  About this catalogue
+                </summary>
+                <p className="pt-3 text-sm leading-6 text-[#686B64]">
+                  This is fictional development inventory. Official photos,
+                  products, prices and stock will replace it when Shopify is
+                  connected.
+                </p>
+              </details>
+            ) : null}
           </div>
         </div>
       </div>

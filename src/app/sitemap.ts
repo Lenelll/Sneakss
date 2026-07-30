@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
-import { products } from "@/lib";
+import { getCommerceCatalog } from "@/lib/catalog-source";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const { products } = await getCommerceCatalog();
   const baseUrl =
     process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const staticRoutes = [

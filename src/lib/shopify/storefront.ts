@@ -7,7 +7,6 @@ export type ShopifyConfigurationIssueCode =
   | "MISSING_STORE_DOMAIN"
   | "INVALID_STORE_DOMAIN"
   | "MISSING_PRIVATE_TOKEN"
-  | "ADMIN_TOKEN_NOT_ALLOWED"
   | "INVALID_PRIVATE_TOKEN"
   | "UNSUPPORTED_API_VERSION";
 
@@ -101,9 +100,19 @@ type ShopifyFetchInit = RequestInit & {
 
 const SHOP_DOMAIN_PATTERN =
   /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.myshopify\.com$/;
-const PRIVATE_TOKEN_PATTERN = /^shpss_[A-Za-z0-9_-]+$/;
 const BUYER_IP_PATTERN = /^[0-9A-Fa-f:.]+$/;
 const MAX_BUYER_IP_LENGTH = 64;
+const MIN_PRIVATE_TOKEN_LENGTH = 20;
+const MAX_PRIVATE_TOKEN_LENGTH = 512;
+
+function isPlausiblePrivateToken(value: string): boolean {
+  return (
+    value.length >= MIN_PRIVATE_TOKEN_LENGTH &&
+    value.length <= MAX_PRIVATE_TOKEN_LENGTH &&
+    !/\s/.test(value) &&
+    value !== "replace_with_server_only_token"
+  );
+}
 
 function readConfiguration(): {
   readonly configuration?: ShopifyConfiguration;
@@ -136,17 +145,11 @@ function readConfiguration(): {
       code: "MISSING_PRIVATE_TOKEN",
       message: "SHOPIFY_STOREFRONT_PRIVATE_TOKEN is required.",
     });
-  } else if (privateToken.startsWith("shpat_")) {
-    issues.push({
-      code: "ADMIN_TOKEN_NOT_ALLOWED",
-      message:
-        "The configured token is an Admin API token. Use the private Storefront API token from the Headless sales channel.",
-    });
-  } else if (!PRIVATE_TOKEN_PATTERN.test(privateToken)) {
+  } else if (!isPlausiblePrivateToken(privateToken)) {
     issues.push({
       code: "INVALID_PRIVATE_TOKEN",
       message:
-        "SHOPIFY_STOREFRONT_PRIVATE_TOKEN must be a private Storefront API token.",
+        "SHOPIFY_STOREFRONT_PRIVATE_TOKEN must be copied from the Headless channel's Private access token field.",
     });
   }
 

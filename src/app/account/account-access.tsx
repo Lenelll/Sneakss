@@ -66,12 +66,12 @@ export function AccountAccess({
           ) : null}
 
           {configured ? (
-            <Link
+            <a
               className="mt-7 flex w-full items-center justify-center rounded-xl bg-[#0E4E3E] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#123F35] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E4E3E]"
               href="/account/auth/login?returnTo=/account"
             >
               Continue with email
-            </Link>
+            </a>
           ) : (
             <div className="mt-7 rounded-xl border border-[#E0B33D]/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]">
               Customer sign-in is waiting for the final Shopify domain,

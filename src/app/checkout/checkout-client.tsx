@@ -138,12 +138,12 @@ export function CheckoutClient({
             </ul>
 
             {!signedIn && customerAccountsConnected ? (
-              <Link
+              <a
                 className="mt-7 inline-flex rounded-xl bg-[#0E4E3E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#123F35]"
                 href="/account/auth/login?returnTo=/checkout"
               >
                 Sign in to continue
-              </Link>
+              </a>
             ) : (
               <Link
                 className="mt-7 inline-flex text-sm font-semibold text-[#0E4E3E] underline decoration-[#E0B33D] decoration-2 underline-offset-4"

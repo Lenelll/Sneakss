@@ -9,12 +9,15 @@ const OAUTH_COOKIE = "svgh_customer_oauth";
 const SESSION_COOKIE = "svgh_customer_session";
 const SESSION_CHUNK_SIZE = 2_800;
 const MAX_SESSION_CHUNKS = 8;
-const OAUTH_MAX_AGE_SECONDS = 10 * 60;
+const OAUTH_MAX_AGE_SECONDS = 20 * 60;
 const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 const ACCESS_TOKEN_REFRESH_WINDOW_MS = 60_000;
 const CLOCK_SKEW_SECONDS = 60;
 const DISCOVERY_CACHE_MS = 5 * 60_000;
 const FETCH_TIMEOUT_MS = 10_000;
+// Cloudflare Workers rejects `redirect: "error"`. Each request below checks
+// response.ok, so manual mode still rejects every redirect without following it.
+const SHOPIFY_REDIRECT_MODE = "manual" as const;
 
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder("utf-8", { fatal: true });
@@ -361,7 +364,7 @@ async function getOpenIdDiscovery(
         "User-Agent": "SneakerVaultGH/1.0",
       },
       cache: "no-store",
-      redirect: "error",
+      redirect: SHOPIFY_REDIRECT_MODE,
     },
   );
 
@@ -443,7 +446,7 @@ async function getCustomerApiDiscovery(
         "User-Agent": "SneakerVaultGH/1.0",
       },
       cache: "no-store",
-      redirect: "error",
+      redirect: SHOPIFY_REDIRECT_MODE,
     },
   );
 
@@ -858,7 +861,7 @@ async function getJwks(
       "User-Agent": "SneakerVaultGH/1.0",
     },
     cache: "no-store",
-    redirect: "error",
+    redirect: SHOPIFY_REDIRECT_MODE,
   });
 
   if (!response.ok) {
@@ -1057,7 +1060,7 @@ async function requestTokens(
     },
     body,
     cache: "no-store",
-    redirect: "manual",
+    redirect: SHOPIFY_REDIRECT_MODE,
   });
 
   if (!response.ok) {
@@ -1283,7 +1286,7 @@ export async function customerAccountFetch<TData>(
     },
     body: JSON.stringify({ query, variables }),
     cache: "no-store",
-    redirect: "error",
+    redirect: SHOPIFY_REDIRECT_MODE,
   });
 
   if (!response.ok) {

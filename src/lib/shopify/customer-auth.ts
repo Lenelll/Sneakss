@@ -125,6 +125,50 @@ export class CustomerAuthConfigurationError extends Error {
   }
 }
 
+export const CUSTOMER_AUTH_FAILURE_CODES = [
+  "transaction-invalid",
+  "provider-error",
+  "code-missing",
+  "state-missing",
+  "state-mismatch",
+  "discovery-failed",
+  "token-invalid-client",
+  "token-invalid-grant",
+  "token-invalid-token",
+  "token-forbidden",
+  "token-exchange-failed",
+  "token-response-invalid",
+  "token-credentials-missing",
+  "id-token-invalid",
+  "session-storage-failed",
+  "unexpected",
+] as const;
+
+export type CustomerAuthFailureCode =
+  (typeof CUSTOMER_AUTH_FAILURE_CODES)[number];
+
+class CustomerAuthFlowError extends Error {
+  readonly code: CustomerAuthFailureCode;
+
+  constructor(code: CustomerAuthFailureCode, message: string) {
+    super(message);
+    this.name = "CustomerAuthFlowError";
+    this.code = code;
+  }
+}
+
+export function getCustomerAuthFailureCode(
+  error: unknown,
+): CustomerAuthFailureCode {
+  return error instanceof CustomerAuthFlowError ? error.code : "unexpected";
+}
+
+export function isCustomerAuthFailureCode(
+  value: string | undefined,
+): value is CustomerAuthFailureCode {
+  return CUSTOMER_AUTH_FAILURE_CODES.some((code) => code === value);
+}
+
 let openIdCache:
   | {
       readonly domain: string;
@@ -1047,30 +1091,95 @@ async function requestTokens(
   discovery: OpenIdDiscovery,
   body: URLSearchParams,
 ): Promise<TokenResponse> {
-  const response = await fetchWithTimeout(discovery.token_endpoint, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      Authorization: `Basic ${base64BasicCredentials(
-        config.clientId,
-        config.clientSecret,
-      )}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-      "User-Agent": "SneakerVaultGH/1.0",
-    },
-    body,
-    cache: "no-store",
-    redirect: SHOPIFY_REDIRECT_MODE,
-  });
+  let response: Response;
 
-  if (!response.ok) {
-    throw new Error("Shopify customer token exchange failed.");
+  try {
+    response = await fetchWithTimeout(discovery.token_endpoint, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Basic ${base64BasicCredentials(
+          config.clientId,
+          config.clientSecret,
+        )}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+        "User-Agent": "SneakerVaultGH/1.0",
+      },
+      body,
+      cache: "no-store",
+      redirect: SHOPIFY_REDIRECT_MODE,
+    });
+  } catch {
+    throw new CustomerAuthFlowError(
+      "token-exchange-failed",
+      "The Shopify customer token endpoint could not be reached.",
+    );
   }
 
-  const value: unknown = await response.json();
+  if (!response.ok) {
+    let providerError = "";
+
+    try {
+      const errorBody: unknown = await response.clone().json();
+
+      if (isObject(errorBody) && typeof errorBody.error === "string") {
+        providerError = errorBody.error;
+      }
+    } catch {
+      // The status code still provides a safe diagnostic if Shopify returns
+      // a non-JSON error page.
+    }
+
+    if (response.status === 401 && providerError === "invalid_client") {
+      throw new CustomerAuthFlowError(
+        "token-invalid-client",
+        "Shopify rejected the customer-account client credentials.",
+      );
+    }
+
+    if (response.status === 400 && providerError === "invalid_grant") {
+      throw new CustomerAuthFlowError(
+        "token-invalid-grant",
+        "Shopify rejected the authorization grant.",
+      );
+    }
+
+    if (response.status === 401 && providerError === "invalid_token") {
+      throw new CustomerAuthFlowError(
+        "token-invalid-token",
+        "Shopify rejected the token request.",
+      );
+    }
+
+    if (response.status === 403) {
+      throw new CustomerAuthFlowError(
+        "token-forbidden",
+        "Shopify denied the customer token exchange.",
+      );
+    }
+
+    throw new CustomerAuthFlowError(
+      "token-exchange-failed",
+      "Shopify customer token exchange failed.",
+    );
+  }
+
+  let value: unknown;
+
+  try {
+    value = await response.json();
+  } catch {
+    throw new CustomerAuthFlowError(
+      "token-response-invalid",
+      "Shopify returned an unreadable customer token response.",
+    );
+  }
 
   if (!isTokenResponse(value)) {
-    throw new Error("Shopify returned an invalid customer token response.");
+    throw new CustomerAuthFlowError(
+      "token-response-invalid",
+      "Shopify returned an invalid customer token response.",
+    );
   }
 
   return value;
@@ -1094,16 +1203,28 @@ async function exchangeAuthorizationCode(
   );
 
   if (!token.refresh_token || !token.id_token) {
-    throw new Error("Shopify token response omitted required credentials.");
+    throw new CustomerAuthFlowError(
+      "token-credentials-missing",
+      "Shopify token response omitted required credentials.",
+    );
   }
 
-  const claims = await verifyIdToken(
-    token.id_token,
-    token.access_token,
-    nonce,
-    config,
-    discovery,
-  );
+  let claims: IdTokenClaims;
+
+  try {
+    claims = await verifyIdToken(
+      token.id_token,
+      token.access_token,
+      nonce,
+      config,
+      discovery,
+    );
+  } catch {
+    throw new CustomerAuthFlowError(
+      "id-token-invalid",
+      "Shopify ID token validation failed.",
+    );
+  }
   const now = Date.now();
 
   return {
@@ -1348,27 +1469,70 @@ export async function finishCustomerAuthorization(
   const transaction = await readOAuthTransaction(request.cookies);
   clearOAuthTransaction(response.cookies, config);
 
-  if (
-    !transaction ||
-    request.nextUrl.searchParams.has("error") ||
-    !request.nextUrl.searchParams.get("code") ||
-    !request.nextUrl.searchParams.get("state") ||
-    !constantTimeEqual(
-      request.nextUrl.searchParams.get("state") ?? "",
-      transaction.state,
-    )
-  ) {
-    throw new Error("The Shopify authorization response is invalid.");
+  if (!transaction) {
+    throw new CustomerAuthFlowError(
+      "transaction-invalid",
+      "The customer authorization transaction is missing or expired.",
+    );
   }
 
-  const discovery = await getOpenIdDiscovery(config);
+  if (request.nextUrl.searchParams.has("error")) {
+    throw new CustomerAuthFlowError(
+      "provider-error",
+      "Shopify returned an authorization error.",
+    );
+  }
+
+  const code = request.nextUrl.searchParams.get("code");
+  const state = request.nextUrl.searchParams.get("state");
+
+  if (!code) {
+    throw new CustomerAuthFlowError(
+      "code-missing",
+      "The Shopify authorization code is missing.",
+    );
+  }
+
+  if (!state) {
+    throw new CustomerAuthFlowError(
+      "state-missing",
+      "The Shopify authorization state is missing.",
+    );
+  }
+
+  if (!constantTimeEqual(state, transaction.state)) {
+    throw new CustomerAuthFlowError(
+      "state-mismatch",
+      "The Shopify authorization state does not match.",
+    );
+  }
+
+  let discovery: OpenIdDiscovery;
+
+  try {
+    discovery = await getOpenIdDiscovery(config);
+  } catch {
+    throw new CustomerAuthFlowError(
+      "discovery-failed",
+      "Shopify OpenID discovery failed during the callback.",
+    );
+  }
+
   const session = await exchangeAuthorizationCode(
-    request.nextUrl.searchParams.get("code") ?? "",
+    code,
     transaction.nonce,
     config,
     discovery,
   );
-  await setStoredSession(response.cookies, config, session);
+
+  try {
+    await setStoredSession(response.cookies, config, session);
+  } catch {
+    throw new CustomerAuthFlowError(
+      "session-storage-failed",
+      "The customer session could not be stored.",
+    );
+  }
 
   return new URL(transaction.returnTo, config.siteOrigin);
 }
@@ -1402,6 +1566,7 @@ export async function beginCustomerLogout(
 export function customerAuthErrorUrl(
   request: NextRequest,
   reason: "configuration" | "provider" | "session",
+  stage?: CustomerAuthFailureCode,
 ): URL {
   let origin: string;
 
@@ -1414,6 +1579,11 @@ export function customerAuthErrorUrl(
   const url = new URL("/account", origin);
   url.searchParams.set("auth", "error");
   url.searchParams.set("reason", reason);
+
+  if (stage) {
+    url.searchParams.set("stage", stage);
+  }
+
   return url;
 }
 

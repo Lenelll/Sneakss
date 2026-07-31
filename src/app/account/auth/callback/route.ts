@@ -3,6 +3,7 @@ import {
   clearCustomerAuthCookies,
   customerAuthErrorUrl,
   finishCustomerAuthorization,
+  getCustomerAuthFailureCode,
 } from "@/lib/shopify/customer-auth";
 
 export const dynamic = "force-dynamic";
@@ -23,11 +24,16 @@ export async function GET(request: NextRequest) {
     const returnUrl = await finishCustomerAuthorization(request, response);
     response.headers.set("Location", returnUrl.toString());
     return preventCaching(response);
-  } catch {
+  } catch (error) {
+    const stage = getCustomerAuthFailureCode(error);
+
+    // Log only the fixed diagnostic code. Never log the callback URL, OAuth
+    // code, state, cookies, token response, customer email, or secrets.
+    console.error("[customer-auth] callback failed", { stage });
     clearCustomerAuthCookies(response);
     response.headers.set(
       "Location",
-      customerAuthErrorUrl(request, "session").toString(),
+      customerAuthErrorUrl(request, "session", stage).toString(),
     );
     return preventCaching(response);
   }

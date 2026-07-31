@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   customerAccountFetch,
   getCustomerSession,
+  isCustomerAuthFailureCode,
   isCustomerAuthConfigured,
 } from "@/lib/shopify/customer-auth";
 import { AccountAccess } from "./account-access";
@@ -16,7 +17,10 @@ export const metadata: Metadata = {
 };
 
 type AccountPageProps = {
-  searchParams: Promise<{ auth?: string | string[] }>;
+  searchParams: Promise<{
+    auth?: string | string[];
+    stage?: string | string[];
+  }>;
 };
 
 type CustomerOverview = {
@@ -32,6 +36,13 @@ export default async function AccountPage({
 }: AccountPageProps) {
   const session = await getCustomerSession();
   const params = await searchParams;
+  const authValue = Array.isArray(params.auth) ? params.auth[0] : params.auth;
+  const stageValue = Array.isArray(params.stage)
+    ? params.stage[0]
+    : params.stage;
+  const authStage = isCustomerAuthFailureCode(stageValue)
+    ? stageValue
+    : undefined;
   let customerName = "";
   let customerEmail = "";
 
@@ -112,10 +123,8 @@ export default async function AccountPage({
         </div>
 
         <AccountAccess
-          authError={
-            (Array.isArray(params.auth) ? params.auth[0] : params.auth) ===
-            "error"
-          }
+          authError={authValue === "error"}
+          authStage={authStage}
           configured={isCustomerAuthConfigured()}
           customerEmail={customerEmail}
           customerName={customerName}

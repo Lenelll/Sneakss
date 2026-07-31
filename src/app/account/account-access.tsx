@@ -6,6 +6,7 @@ type AccountAccessProps = {
   customerName?: string;
   customerEmail?: string;
   authError?: boolean;
+  authStage?: string;
 };
 
 export function AccountAccess({
@@ -14,6 +15,7 @@ export function AccountAccess({
   customerName,
   customerEmail,
   authError = false,
+  authStage,
 }: AccountAccessProps) {
   return (
     <div className="rounded-[1.5rem] border border-[#D8D8D0] bg-white p-6 shadow-[0_18px_50px_rgba(21,23,19,0.08)] sm:p-8">
@@ -62,6 +64,11 @@ export function AccountAccess({
               role="alert"
             >
               Sign-in could not be completed. Please try again.
+              {authStage ? (
+                <span className="mt-2 block text-xs font-semibold tracking-[0.08em] uppercase">
+                  Diagnostic reference: {authStage}
+                </span>
+              ) : null}
             </p>
           ) : null}
 

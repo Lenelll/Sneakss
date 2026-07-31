@@ -35,9 +35,7 @@ interface OpenIdDiscovery {
   readonly authorization_endpoint: string;
   readonly token_endpoint: string;
   readonly end_session_endpoint: string;
-  readonly jwks_uri: string;
   readonly issuer: string;
-  readonly id_token_signing_alg_values_supported?: readonly string[];
 }
 
 interface CustomerApiDiscovery {
@@ -69,15 +67,8 @@ interface TokenResponse {
 }
 
 interface IdTokenClaims {
-  readonly iss: string;
   readonly sub: string;
-  readonly aud: string | readonly string[];
-  readonly exp: number;
-  readonly iat: number;
-  readonly nbf?: number;
-  readonly azp?: string;
   readonly nonce?: string;
-  readonly at_hash?: string;
 }
 
 interface CookieReader {
@@ -112,12 +103,6 @@ export interface ResolvedCustomerSession extends CustomerSession {
   commit(response: NextResponse): Promise<void>;
 }
 
-type SigningJsonWebKey = JsonWebKey & {
-  readonly alg?: string;
-  readonly kid?: string;
-  readonly use?: string;
-};
-
 export class CustomerAuthConfigurationError extends Error {
   constructor(message: string) {
     super(message);
@@ -140,6 +125,7 @@ export const CUSTOMER_AUTH_FAILURE_CODES = [
   "token-response-invalid",
   "token-credentials-missing",
   "id-token-invalid",
+  "id-token-nonce-invalid",
   "session-storage-failed",
   "unexpected",
 ] as const;
@@ -184,14 +170,6 @@ let customerApiCache:
       readonly value: CustomerApiDiscovery;
     }
   | undefined;
-
-const jwksCache = new Map<
-  string,
-  {
-    readonly expiresAt: number;
-    readonly keys: readonly SigningJsonWebKey[];
-  }
->();
 
 const refreshesInFlight = new Map<
   string,
@@ -440,27 +418,8 @@ async function getOpenIdDiscovery(
       "end_session_endpoint",
       issuerOrigin,
     ),
-    jwks_uri: assertShopEndpoint(
-      body.jwks_uri,
-      "jwks_uri",
-      issuerOrigin,
-    ),
     issuer,
-    id_token_signing_alg_values_supported: Array.isArray(
-      body.id_token_signing_alg_values_supported,
-    )
-      ? body.id_token_signing_alg_values_supported.filter(
-          (value): value is string => typeof value === "string",
-        )
-      : undefined,
   };
-
-  if (
-    value.id_token_signing_alg_values_supported &&
-    !value.id_token_signing_alg_values_supported.includes("RS256")
-  ) {
-    throw new Error("Shopify OpenID discovery does not advertise RS256.");
-  }
 
   openIdCache = {
     domain: config.shopDomain,
@@ -889,158 +848,24 @@ function parseJwtPart(value: string): Record<string, unknown> {
   return parsed;
 }
 
-async function getJwks(
-  uri: string,
-  forceRefresh = false,
-): Promise<readonly SigningJsonWebKey[]> {
-  const cached = jwksCache.get(uri);
-
-  if (!forceRefresh && cached && cached.expiresAt > Date.now()) {
-    return cached.keys;
-  }
-
-  const response = await fetchWithTimeout(uri, {
-    headers: {
-      Accept: "application/json",
-      "User-Agent": "SneakerVaultGH/1.0",
-    },
-    cache: "no-store",
-    redirect: SHOPIFY_REDIRECT_MODE,
-  });
-
-  if (!response.ok) {
-    throw new Error("Shopify JWKS retrieval failed.");
-  }
-
-  const body: unknown = await response.json();
-
-  if (!isObject(body) || !Array.isArray(body.keys)) {
-    throw new Error("Shopify JWKS response is invalid.");
-  }
-
-  const keys = body.keys.filter(
-    (key): key is SigningJsonWebKey =>
-      isObject(key) && typeof key.kty === "string",
-  );
-
-  if (keys.length === 0) {
-    throw new Error("Shopify JWKS response has no signing keys.");
-  }
-
-  jwksCache.set(uri, {
-    expiresAt: Date.now() + DISCOVERY_CACHE_MS,
-    keys,
-  });
-
-  return keys;
-}
-
-function isIdTokenClaims(value: Record<string, unknown>): value is Record<
-  string,
-  unknown
-> &
-  IdTokenClaims {
-  const audience = value.aud;
-
-  return (
-    typeof value.iss === "string" &&
-    typeof value.sub === "string" &&
-    value.sub.length > 0 &&
-    (typeof audience === "string" ||
-      (Array.isArray(audience) &&
-        audience.length > 0 &&
-        audience.every((entry) => typeof entry === "string"))) &&
-    typeof value.exp === "number" &&
-    Number.isFinite(value.exp) &&
-    typeof value.iat === "number" &&
-    Number.isFinite(value.iat)
-  );
-}
-
-async function verifyIdToken(
+// Shopify returns this token directly from its authenticated token endpoint.
+// Its Customer Account flow uses the payload to bind the response to the
+// original authorization request through the nonce.
+function readIdTokenClaims(
   idToken: string,
-  accessToken: string,
   expectedNonce: string | undefined,
-  config: CustomerAuthConfig,
-  discovery: OpenIdDiscovery,
-): Promise<IdTokenClaims> {
+): IdTokenClaims {
   const parts = idToken.split(".");
 
   if (parts.length !== 3 || parts.some((part) => part.length === 0)) {
     throw new Error("Shopify returned an invalid ID token.");
   }
 
-  const header = parseJwtPart(parts[0]);
+  parseJwtPart(parts[0]);
   const claimsValue = parseJwtPart(parts[1]);
 
-  if (
-    header.alg !== "RS256" ||
-    typeof header.kid !== "string" ||
-    (header.typ !== undefined && header.typ !== "JWT")
-  ) {
-    throw new Error("Shopify returned an unsupported ID token.");
-  }
-
-  let keys = await getJwks(discovery.jwks_uri);
-  let jwk = keys.find(
-    (key) =>
-      key.kid === header.kid &&
-      key.kty === "RSA" &&
-      (key.use === undefined || key.use === "sig") &&
-      (key.alg === undefined || key.alg === "RS256"),
-  );
-
-  if (!jwk) {
-    keys = await getJwks(discovery.jwks_uri, true);
-    jwk = keys.find(
-      (key) =>
-        key.kid === header.kid &&
-        key.kty === "RSA" &&
-        (key.use === undefined || key.use === "sig") &&
-        (key.alg === undefined || key.alg === "RS256"),
-    );
-
-    if (!jwk) {
-      throw new Error("The Shopify ID token signing key was not found.");
-    }
-  }
-
-  const key = await crypto.subtle.importKey(
-    "jwk",
-    jwk,
-    {
-      name: "RSASSA-PKCS1-v1_5",
-      hash: "SHA-256",
-    },
-    false,
-    ["verify"],
-  );
-  const verified = await crypto.subtle.verify(
-    "RSASSA-PKCS1-v1_5",
-    key,
-    base64UrlToBytes(parts[2]),
-    textEncoder.encode(`${parts[0]}.${parts[1]}`),
-  );
-
-  if (!verified || !isIdTokenClaims(claimsValue)) {
-    throw new Error("Shopify ID token verification failed.");
-  }
-
-  const now = Math.floor(Date.now() / 1_000);
-  const audience = Array.isArray(claimsValue.aud)
-    ? claimsValue.aud
-    : [claimsValue.aud];
-
-  if (
-    claimsValue.iss.replace(/\/$/, "") !== discovery.issuer ||
-    !audience.includes(config.clientId) ||
-    claimsValue.exp <= now - CLOCK_SKEW_SECONDS ||
-    claimsValue.iat > now + CLOCK_SKEW_SECONDS ||
-    (typeof claimsValue.nbf === "number" &&
-      claimsValue.nbf > now + CLOCK_SKEW_SECONDS) ||
-    (audience.length > 1 && claimsValue.azp !== config.clientId)
-  ) {
-    throw new Error("Shopify ID token claims are invalid.");
+  if (typeof claimsValue.sub !== "string" || claimsValue.sub.length === 0) {
+    throw new Error("Shopify ID token is missing its customer subject.");
   }
 
   if (
@@ -1048,23 +873,17 @@ async function verifyIdToken(
     (typeof claimsValue.nonce !== "string" ||
       !constantTimeEqual(claimsValue.nonce, expectedNonce))
   ) {
-    throw new Error("Shopify ID token nonce validation failed.");
+    throw new CustomerAuthFlowError(
+      "id-token-nonce-invalid",
+      "Shopify ID token nonce validation failed.",
+    );
   }
 
-  if (typeof claimsValue.at_hash === "string") {
-    const accessTokenDigest = new Uint8Array(
-      await crypto.subtle.digest("SHA-256", textEncoder.encode(accessToken)),
-    );
-    const expectedAtHash = bytesToBase64Url(
-      accessTokenDigest.slice(0, accessTokenDigest.length / 2),
-    );
-
-    if (!constantTimeEqual(claimsValue.at_hash, expectedAtHash)) {
-      throw new Error("Shopify ID token access-token binding is invalid.");
-    }
-  }
-
-  return claimsValue;
+  return {
+    sub: claimsValue.sub,
+    nonce:
+      typeof claimsValue.nonce === "string" ? claimsValue.nonce : undefined,
+  };
 }
 
 function isTokenResponse(value: unknown): value is TokenResponse {
@@ -1212,14 +1031,12 @@ async function exchangeAuthorizationCode(
   let claims: IdTokenClaims;
 
   try {
-    claims = await verifyIdToken(
-      token.id_token,
-      token.access_token,
-      nonce,
-      config,
-      discovery,
-    );
-  } catch {
+    claims = readIdTokenClaims(token.id_token, nonce);
+  } catch (error) {
+    if (error instanceof CustomerAuthFlowError) {
+      throw error;
+    }
+
     throw new CustomerAuthFlowError(
       "id-token-invalid",
       "Shopify ID token validation failed.",
@@ -1267,28 +1084,13 @@ async function refreshStoredSession(
           refresh_token: current.refreshToken,
         }),
       );
-      let idToken = current.idToken;
-      let subject = current.subject;
 
-      if (token.id_token) {
-        const claims = await verifyIdToken(
-          token.id_token,
-          token.access_token,
-          undefined,
-          config,
-          discovery,
-        );
-        idToken = token.id_token;
-        subject = claims.sub;
-      }
-
+      // Shopify keeps the original authorization ID token as the logout hint.
       return {
         ...current,
         accessToken: token.access_token,
         refreshToken: token.refresh_token ?? current.refreshToken,
-        idToken,
         accessTokenExpiresAt: Date.now() + token.expires_in * 1_000,
-        subject,
       };
     } catch {
       return null;

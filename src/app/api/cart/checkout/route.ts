@@ -7,6 +7,7 @@ import {
 } from "@/lib/shopify";
 import {
   isCustomerAuthConfigured,
+  isTrustedCustomerAuthPost,
   resolveCustomerSession,
 } from "@/lib/shopify/customer-auth";
 
@@ -53,12 +54,19 @@ export async function POST(request: NextRequest) {
     return redirect(request, "/checkout?checkout=configuration");
   }
 
+  if (!isTrustedCustomerAuthPost(request)) {
+    return new NextResponse("The checkout request could not be verified.", {
+      status: 403,
+      headers: { "Cache-Control": "no-store" },
+    });
+  }
+
   const session = await resolveCustomerSession(request);
 
   if (!session) {
     return redirect(
       request,
-      "/account/auth/login?returnTo=/checkout%3Fresume%3D1",
+      "/account/sign-in?returnTo=/checkout%3Fresume%3D1",
     );
   }
 

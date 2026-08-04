@@ -6,10 +6,12 @@ import type { NextRequest, NextResponse } from "next/server";
 const AUTH_SCOPE = "openid email customer-account-api:full";
 const CALLBACK_PATH = "/account/auth/callback";
 const OAUTH_COOKIE = "svgh_customer_oauth";
+const REGISTRATION_COOKIE = "svgh_customer_registration";
 const SESSION_COOKIE = "svgh_customer_session";
 const SESSION_CHUNK_SIZE = 2_800;
 const MAX_SESSION_CHUNKS = 8;
 const OAUTH_MAX_AGE_SECONDS = 20 * 60;
+const REGISTRATION_MAX_AGE_SECONDS = 30 * 60;
 const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 const ACCESS_TOKEN_REFRESH_WINDOW_MS = 60_000;
 const CLOCK_SKEW_SECONDS = 60;
@@ -45,6 +47,16 @@ interface CustomerApiDiscovery {
 interface OAuthTransaction {
   readonly state: string;
   readonly nonce: string;
+  readonly expectedEmail: string;
+  readonly registration?: PendingCustomerRegistration;
+  readonly returnTo: string;
+  readonly issuedAt: number;
+}
+
+export interface PendingCustomerRegistration {
+  readonly firstName: string;
+  readonly lastName: string;
+  readonly email: string;
   readonly returnTo: string;
   readonly issuedAt: number;
 }
@@ -95,6 +107,11 @@ export interface CustomerSession {
   readonly subject: string;
 }
 
+export type CustomerSessionState =
+  | { readonly status: "none" }
+  | { readonly status: "refresh-required" }
+  | { readonly status: "valid"; readonly session: CustomerSession };
+
 export interface ResolvedCustomerSession extends CustomerSession {
   /**
    * Call this on the response returned by the route handler. It persists a
@@ -126,6 +143,9 @@ export const CUSTOMER_AUTH_FAILURE_CODES = [
   "token-credentials-missing",
   "id-token-invalid",
   "id-token-nonce-invalid",
+  "authenticated-email-unavailable",
+  "authenticated-email-mismatch",
+  "profile-update-failed",
   "session-storage-failed",
   "unexpected",
 ] as const;
@@ -135,11 +155,17 @@ export type CustomerAuthFailureCode =
 
 class CustomerAuthFlowError extends Error {
   readonly code: CustomerAuthFailureCode;
+  readonly returnTo?: string;
 
-  constructor(code: CustomerAuthFailureCode, message: string) {
+  constructor(
+    code: CustomerAuthFailureCode,
+    message: string,
+    returnTo?: string,
+  ) {
     super(message);
     this.name = "CustomerAuthFlowError";
     this.code = code;
+    this.returnTo = returnTo;
   }
 }
 
@@ -147,6 +173,12 @@ export function getCustomerAuthFailureCode(
   error: unknown,
 ): CustomerAuthFailureCode {
   return error instanceof CustomerAuthFlowError ? error.code : "unexpected";
+}
+
+export function getCustomerAuthReturnTo(error: unknown): string | null {
+  return error instanceof CustomerAuthFlowError
+    ? safeCustomerReturnTo(error.returnTo ?? null)
+    : null;
 }
 
 export function isCustomerAuthFailureCode(
@@ -322,15 +354,20 @@ function assertHttpsUrl(value: unknown, label: string): string {
   return url.toString();
 }
 
-function assertShopEndpoint(
-  value: unknown,
-  label: string,
-  expectedOrigin: string,
-): string {
+function assertDiscoveredEndpoint(value: unknown, label: string): string {
   const url = new URL(assertHttpsUrl(value, label));
 
-  if (url.origin !== expectedOrigin || url.username || url.password) {
-    throw new Error(`${label} from Shopify discovery has an invalid host.`);
+  // Shopify can return the shop's configured customer-account domain,
+  // including a custom vanity domain. It need not match the OIDC issuer.
+  // Trust the endpoint from the TLS-protected discovery document while still
+  // rejecting credentials, fragments, and unexpected ports.
+  if (
+    url.username ||
+    url.password ||
+    url.hash ||
+    (url.port && url.port !== "443")
+  ) {
+    throw new Error(`${label} from Shopify discovery is invalid.`);
   }
 
   return url.toString();
@@ -401,22 +438,18 @@ async function getOpenIdDiscovery(
   }
 
   const issuer = assertShopifyIssuer(body.issuer);
-  const issuerOrigin = new URL(issuer).origin;
   const value: OpenIdDiscovery = {
-    authorization_endpoint: assertShopEndpoint(
+    authorization_endpoint: assertDiscoveredEndpoint(
       body.authorization_endpoint,
       "authorization_endpoint",
-      issuerOrigin,
     ),
-    token_endpoint: assertShopEndpoint(
+    token_endpoint: assertDiscoveredEndpoint(
       body.token_endpoint,
       "token_endpoint",
-      issuerOrigin,
     ),
-    end_session_endpoint: assertShopEndpoint(
+    end_session_endpoint: assertDiscoveredEndpoint(
       body.end_session_endpoint,
       "end_session_endpoint",
-      issuerOrigin,
     ),
     issuer,
   };
@@ -440,7 +473,6 @@ async function getCustomerApiDiscovery(
     return customerApiCache.value;
   }
 
-  const openIdDiscovery = await getOpenIdDiscovery(config);
   const response = await fetchWithTimeout(
     `https://${config.shopDomain}/.well-known/customer-account-api`,
     {
@@ -466,11 +498,7 @@ async function getCustomerApiDiscovery(
   }
 
   const value: CustomerApiDiscovery = {
-    graphql_api: assertShopEndpoint(
-      body.graphql_api,
-      "graphql_api",
-      new URL(openIdDiscovery.issuer).origin,
-    ),
+    graphql_api: assertDiscoveredEndpoint(body.graphql_api, "graphql_api"),
   };
 
   customerApiCache = {
@@ -530,8 +558,10 @@ function base64BasicCredentials(clientId: string, clientSecret: string): string 
   return bytesToBase64(textEncoder.encode(`${clientId}:${clientSecret}`));
 }
 
+type EncryptedCookiePurpose = "oauth" | "registration" | "session";
+
 async function encryptionKey(
-  purpose: "oauth" | "session",
+  purpose: EncryptedCookiePurpose,
 ): Promise<CryptoKey> {
   const secret = requiredEnvironmentValue("SESSION_SECRET");
   const material = textEncoder.encode(
@@ -547,7 +577,7 @@ async function encryptionKey(
 
 async function sealJson(
   value: unknown,
-  purpose: "oauth" | "session",
+  purpose: EncryptedCookiePurpose,
 ): Promise<string> {
   const iv = new Uint8Array(12);
   crypto.getRandomValues(iv);
@@ -570,7 +600,7 @@ async function sealJson(
 
 async function openJson(
   value: string,
-  purpose: "oauth" | "session",
+  purpose: EncryptedCookiePurpose,
 ): Promise<unknown> {
   const parts = value.split(".");
 
@@ -592,7 +622,10 @@ async function openJson(
   return JSON.parse(textDecoder.decode(plaintext)) as unknown;
 }
 
-function safeReturnTo(value: string | null, fallback = "/account"): string {
+export function safeCustomerReturnTo(
+  value: string | null,
+  fallback = "/account",
+): string {
   if (
     !value ||
     value.length > 1_024 ||
@@ -612,9 +645,110 @@ function safeReturnTo(value: string | null, fallback = "/account"): string {
       return fallback;
     }
 
+    if (
+      parsed.pathname === "/api" ||
+      parsed.pathname.startsWith("/api/") ||
+      parsed.pathname === "/account/auth" ||
+      parsed.pathname.startsWith("/account/auth/") ||
+      parsed.pathname === "/account/sign-in" ||
+      parsed.pathname === "/account/sign-up"
+    ) {
+      return fallback;
+    }
+
     return `${parsed.pathname}${parsed.search}${parsed.hash}`;
   } catch {
     return fallback;
+  }
+}
+
+export function normalizeCustomerEmail(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.normalize("NFC");
+
+  if (/[\u0000-\u001f\u007f-\u009f]/.test(normalized)) {
+    return null;
+  }
+
+  const email = normalized.trim().toLowerCase();
+
+  if (
+    email.length < 3 ||
+    email.length > 254 ||
+    /\s/.test(email)
+  ) {
+    return null;
+  }
+
+  const atIndex = email.indexOf("@");
+
+  if (
+    atIndex < 1 ||
+    atIndex !== email.lastIndexOf("@") ||
+    atIndex > 64 ||
+    atIndex === email.length - 1
+  ) {
+    return null;
+  }
+
+  const domain = email.slice(atIndex + 1);
+  const labels = domain.split(".");
+
+  if (
+    labels.length < 2 ||
+    labels.some(
+      (label) =>
+        label.length < 1 ||
+        label.length > 63 ||
+        label.startsWith("-") ||
+        label.endsWith("-") ||
+        !/^[a-z0-9-]+$/.test(label),
+    )
+  ) {
+    return null;
+  }
+
+  return email;
+}
+
+export function normalizeCustomerName(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value.normalize("NFC");
+
+  if (/[\u0000-\u001f\u007f-\u009f]/.test(normalized)) {
+    return null;
+  }
+
+  const name = normalized.trim().replace(/\s+/g, " ");
+
+  if (
+    name.length < 1 ||
+    name.length > 64
+  ) {
+    return null;
+  }
+
+  return name;
+}
+
+export function isTrustedCustomerAuthPost(request: NextRequest): boolean {
+  const originValue = request.headers.get("origin");
+
+  if (!originValue) {
+    return process.env.NODE_ENV !== "production";
+  }
+
+  try {
+    const origin = new URL(originValue).origin;
+    return origin === getConfig().siteOrigin;
+  } catch {
+    return false;
   }
 }
 
@@ -630,6 +764,30 @@ function constantTimeEqual(left: string, right: string): boolean {
   }
 
   return difference === 0;
+}
+
+export function customerEmailsMatch(left: unknown, right: unknown): boolean {
+  const normalizedLeft = normalizeCustomerEmail(left);
+  const normalizedRight = normalizeCustomerEmail(right);
+
+  return Boolean(
+    normalizedLeft &&
+      normalizedRight &&
+      constantTimeEqual(normalizedLeft, normalizedRight),
+  );
+}
+
+function pendingRegistrationsMatch(
+  left: PendingCustomerRegistration,
+  right: PendingCustomerRegistration,
+): boolean {
+  return (
+    customerEmailsMatch(left.email, right.email) &&
+    left.firstName === right.firstName &&
+    left.lastName === right.lastName &&
+    left.returnTo === right.returnTo &&
+    left.issuedAt === right.issuedAt
+  );
 }
 
 function standardCookieOptions(
@@ -674,6 +832,139 @@ function clearOAuthTransaction(
   clearCookie(writer, config, OAUTH_COOKIE, "/account/auth");
 }
 
+async function setPendingCustomerRegistration(
+  writer: CookieWriter,
+  config: CustomerAuthConfig,
+  registration: PendingCustomerRegistration,
+): Promise<void> {
+  writer.set(
+    REGISTRATION_COOKIE,
+    await sealJson(registration, "registration"),
+    standardCookieOptions(
+      config,
+      REGISTRATION_MAX_AGE_SECONDS,
+      "/account",
+    ),
+  );
+}
+
+function clearPendingRegistrationCookie(
+  writer: CookieWriter,
+  config: CustomerAuthConfig,
+): void {
+  clearCookie(writer, config, REGISTRATION_COOKIE, "/account");
+}
+
+function parsePendingCustomerRegistration(
+  value: unknown,
+): PendingCustomerRegistration | null {
+  if (!isObject(value)) {
+    return null;
+  }
+
+  const firstName = normalizeCustomerName(value.firstName);
+  const lastName = normalizeCustomerName(value.lastName);
+  const email = normalizeCustomerEmail(value.email);
+
+  if (
+    !firstName ||
+    !lastName ||
+    !email ||
+    typeof value.returnTo !== "string" ||
+    typeof value.issuedAt !== "number" ||
+    !Number.isFinite(value.issuedAt)
+  ) {
+    return null;
+  }
+
+  const age = Date.now() - value.issuedAt;
+
+  if (
+    age < -CLOCK_SKEW_SECONDS * 1_000 ||
+    age > REGISTRATION_MAX_AGE_SECONDS * 1_000
+  ) {
+    return null;
+  }
+
+  return {
+    firstName,
+    lastName,
+    email,
+    returnTo: safeCustomerReturnTo(value.returnTo),
+    issuedAt: value.issuedAt,
+  };
+}
+
+export async function createPendingCustomerRegistration(
+  response: NextResponse,
+  input: {
+    readonly firstName: unknown;
+    readonly lastName: unknown;
+    readonly email: unknown;
+    readonly returnTo: string | null;
+  },
+): Promise<PendingCustomerRegistration | null> {
+  const firstName = normalizeCustomerName(input.firstName);
+  const lastName = normalizeCustomerName(input.lastName);
+  const email = normalizeCustomerEmail(input.email);
+
+  if (!firstName || !lastName || !email) {
+    return null;
+  }
+
+  const config = getConfig();
+  const registration: PendingCustomerRegistration = {
+    firstName,
+    lastName,
+    email,
+    returnTo: safeCustomerReturnTo(input.returnTo),
+    issuedAt: Date.now(),
+  };
+  await setPendingCustomerRegistration(
+    response.cookies,
+    config,
+    registration,
+  );
+  clearOAuthTransaction(response.cookies, config);
+  return registration;
+}
+
+export async function readPendingCustomerRegistration(
+  request: NextRequest,
+): Promise<PendingCustomerRegistration | null> {
+  const cookie = request.cookies.get(REGISTRATION_COOKIE)?.value;
+
+  if (!cookie) {
+    return null;
+  }
+
+  try {
+    return parsePendingCustomerRegistration(
+      await openJson(cookie, "registration"),
+    );
+  } catch {
+    return null;
+  }
+}
+
+export function clearPendingCustomerRegistration(
+  response: NextResponse,
+): void {
+  try {
+    clearPendingRegistrationCookie(response.cookies, getConfig());
+  } catch {
+    // No correctly scoped cookie can be cleared without valid configuration.
+  }
+}
+
+export function clearCustomerAuthTransaction(response: NextResponse): void {
+  try {
+    clearOAuthTransaction(response.cookies, getConfig());
+  } catch {
+    // No correctly scoped cookie can be cleared without valid configuration.
+  }
+}
+
 async function readOAuthTransaction(
   reader: CookieReader,
 ): Promise<OAuthTransaction | null> {
@@ -690,6 +981,7 @@ async function readOAuthTransaction(
       !isObject(value) ||
       typeof value.state !== "string" ||
       typeof value.nonce !== "string" ||
+      typeof value.expectedEmail !== "string" ||
       typeof value.returnTo !== "string" ||
       typeof value.issuedAt !== "number"
     ) {
@@ -702,10 +994,22 @@ async function readOAuthTransaction(
       return null;
     }
 
+    const expectedEmail = normalizeCustomerEmail(value.expectedEmail);
+    const registration =
+      value.registration === undefined
+        ? undefined
+        : parsePendingCustomerRegistration(value.registration);
+
+    if (!expectedEmail || (value.registration !== undefined && !registration)) {
+      return null;
+    }
+
     return {
       state: value.state,
       nonce: value.nonce,
-      returnTo: safeReturnTo(value.returnTo),
+      expectedEmail,
+      registration: registration ?? undefined,
+      returnTo: safeCustomerReturnTo(value.returnTo),
       issuedAt: value.issuedAt,
     };
   } catch {
@@ -1121,17 +1425,29 @@ function toPublicSession(session: StoredCustomerSession): CustomerSession {
  * cookie. Route handlers should use resolveCustomerSession() instead.
  */
 export async function getCustomerSession(): Promise<CustomerSession | null> {
+  const state = await getCustomerSessionState();
+  return state.status === "valid" ? state.session : null;
+}
+
+export async function getCustomerSessionState(): Promise<CustomerSessionState> {
   try {
     const cookieStore = await cookies();
     const session = await readStoredSession(cookieStore);
 
-    if (!session || session.accessTokenExpiresAt <= Date.now()) {
-      return null;
+    if (!session) {
+      return { status: "none" };
     }
 
-    return toPublicSession(session);
+    if (
+      session.accessTokenExpiresAt <=
+      Date.now() + ACCESS_TOKEN_REFRESH_WINDOW_MS
+    ) {
+      return { status: "refresh-required" };
+    }
+
+    return { status: "valid", session: toPublicSession(session) };
   } catch {
-    return null;
+    return { status: "none" };
   }
 }
 
@@ -1233,19 +1549,190 @@ export async function customerAccountFetch<TData>(
   return body.data as TData;
 }
 
+interface AuthenticatedCustomerIdentity {
+  readonly email: string | null;
+  readonly firstName: string | null;
+  readonly lastName: string | null;
+}
+
+type AuthenticatedCustomerIdentityResponse = {
+  readonly customer: {
+    readonly firstName: string | null;
+    readonly lastName: string | null;
+    readonly emailAddress: {
+      readonly emailAddress: string | null;
+    } | null;
+  } | null;
+};
+
+async function getAuthenticatedCustomerIdentity(
+  accessToken: string,
+): Promise<AuthenticatedCustomerIdentity> {
+  let data: AuthenticatedCustomerIdentityResponse;
+
+  try {
+    data = await customerAccountFetch<AuthenticatedCustomerIdentityResponse>(
+      accessToken,
+      `query AuthenticatedCustomerIdentity {
+        customer {
+          firstName
+          lastName
+          emailAddress {
+            emailAddress
+          }
+        }
+      }`,
+    );
+  } catch {
+    throw new CustomerAuthFlowError(
+      "authenticated-email-unavailable",
+      "The authenticated Shopify customer email could not be read.",
+    );
+  }
+
+  const customer = data?.customer;
+
+  return {
+    email: normalizeCustomerEmail(customer?.emailAddress?.emailAddress),
+    firstName:
+      typeof customer?.firstName === "string" ? customer.firstName : null,
+    lastName:
+      typeof customer?.lastName === "string" ? customer.lastName : null,
+  };
+}
+
+type CustomerProfileUpdateResponse = {
+  readonly customerUpdate: {
+    readonly customer: {
+      readonly firstName: string | null;
+      readonly lastName: string | null;
+    } | null;
+    readonly userErrors: readonly {
+      readonly field: readonly string[] | null;
+      readonly message: string;
+    }[];
+  } | null;
+};
+
+async function completePendingCustomerProfile(
+  accessToken: string,
+  registration: PendingCustomerRegistration,
+  identity: AuthenticatedCustomerIdentity,
+): Promise<void> {
+  const input: { firstName?: string; lastName?: string } = {};
+
+  // A verified existing customer keeps any name already stored in Shopify.
+  // Signup only fills missing profile fields; it never silently overwrites them.
+  if (!identity.firstName?.trim()) {
+    input.firstName = registration.firstName;
+  }
+
+  if (!identity.lastName?.trim()) {
+    input.lastName = registration.lastName;
+  }
+
+  if (Object.keys(input).length === 0) {
+    return;
+  }
+
+  let data: CustomerProfileUpdateResponse;
+
+  try {
+    data = await customerAccountFetch<CustomerProfileUpdateResponse>(
+      accessToken,
+      `mutation CompleteCustomerRegistration($input: CustomerUpdateInput!) {
+        customerUpdate(input: $input) {
+          customer {
+            firstName
+            lastName
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }`,
+      { input },
+    );
+  } catch {
+    throw new CustomerAuthFlowError(
+      "profile-update-failed",
+      "The verified Shopify customer profile could not be completed.",
+    );
+  }
+
+  if (
+    !data?.customerUpdate?.customer ||
+    !Array.isArray(data.customerUpdate.userErrors) ||
+    data.customerUpdate.userErrors.length > 0
+  ) {
+    throw new CustomerAuthFlowError(
+      "profile-update-failed",
+      "Shopify rejected the verified customer profile update.",
+    );
+  }
+}
+
 export async function beginCustomerAuthorization(
-  request: NextRequest,
   response: NextResponse,
+  input: {
+    readonly email: string;
+    readonly returnTo: string | null;
+    readonly registration?: PendingCustomerRegistration;
+  },
 ): Promise<URL> {
   const config = getConfig();
   const discovery = await getOpenIdDiscovery(config);
+  const expectedEmail = normalizeCustomerEmail(input.email);
+
+  if (!expectedEmail) {
+    throw new CustomerAuthFlowError(
+      "authenticated-email-unavailable",
+      "A valid customer email is required to begin authorization.",
+    );
+  }
+
+  if (
+    input.registration &&
+    !customerEmailsMatch(input.registration.email, expectedEmail)
+  ) {
+    throw new CustomerAuthFlowError(
+      "authenticated-email-mismatch",
+      "The registration and sign-in emails do not match.",
+    );
+  }
+
+  const issuedAt = Date.now();
+  const returnTo = input.registration
+    ? safeCustomerReturnTo(input.registration.returnTo)
+    : safeCustomerReturnTo(input.returnTo);
+  const registration = input.registration
+    ? {
+        ...input.registration,
+        returnTo,
+        issuedAt,
+      }
+    : undefined;
   const transaction: OAuthTransaction = {
     state: randomBase64Url(),
     nonce: randomBase64Url(),
-    returnTo: safeReturnTo(request.nextUrl.searchParams.get("returnTo")),
-    issuedAt: Date.now(),
+    expectedEmail,
+    registration,
+    returnTo,
+    issuedAt,
   };
   await setOAuthTransaction(response.cookies, config, transaction);
+
+  if (registration) {
+    // Refresh the short-lived pending record for the provider round-trip. It
+    // remains separately sealed so an abandoned or invalid OAuth callback can
+    // be retried without losing the customer's submitted names.
+    await setPendingCustomerRegistration(
+      response.cookies,
+      config,
+      registration,
+    );
+  }
 
   const authorizationUrl = new URL(discovery.authorization_endpoint);
   authorizationUrl.searchParams.set("scope", AUTH_SCOPE);
@@ -1257,6 +1744,7 @@ export async function beginCustomerAuthorization(
   );
   authorizationUrl.searchParams.set("state", transaction.state);
   authorizationUrl.searchParams.set("nonce", transaction.nonce);
+  authorizationUrl.searchParams.set("login_hint", transaction.expectedEmail);
   authorizationUrl.searchParams.set("locale", "en-GH");
   authorizationUrl.searchParams.set("region_country", "GH");
 
@@ -1269,70 +1757,130 @@ export async function finishCustomerAuthorization(
 ): Promise<URL> {
   const config = getConfig();
   const transaction = await readOAuthTransaction(request.cookies);
-  clearOAuthTransaction(response.cookies, config);
 
   if (!transaction) {
+    clearOAuthTransaction(response.cookies, config);
     throw new CustomerAuthFlowError(
       "transaction-invalid",
       "The customer authorization transaction is missing or expired.",
     );
   }
 
-  if (request.nextUrl.searchParams.has("error")) {
-    throw new CustomerAuthFlowError(
-      "provider-error",
-      "Shopify returned an authorization error.",
-    );
-  }
-
-  const code = request.nextUrl.searchParams.get("code");
-  const state = request.nextUrl.searchParams.get("state");
-
-  if (!code) {
-    throw new CustomerAuthFlowError(
-      "code-missing",
-      "The Shopify authorization code is missing.",
-    );
-  }
-
-  if (!state) {
-    throw new CustomerAuthFlowError(
-      "state-missing",
-      "The Shopify authorization state is missing.",
-    );
-  }
-
-  if (!constantTimeEqual(state, transaction.state)) {
-    throw new CustomerAuthFlowError(
-      "state-mismatch",
-      "The Shopify authorization state does not match.",
-    );
-  }
-
-  let discovery: OpenIdDiscovery;
-
   try {
-    discovery = await getOpenIdDiscovery(config);
-  } catch {
-    throw new CustomerAuthFlowError(
-      "discovery-failed",
-      "Shopify OpenID discovery failed during the callback.",
+    const state = request.nextUrl.searchParams.get("state");
+
+    if (!state) {
+      throw new CustomerAuthFlowError(
+        "state-missing",
+        "The Shopify authorization state is missing.",
+      );
+    }
+
+    if (!constantTimeEqual(state, transaction.state)) {
+      throw new CustomerAuthFlowError(
+        "state-mismatch",
+        "The Shopify authorization state does not match.",
+      );
+    }
+
+    // Only the callback that owns this transaction may consume its cookie.
+    // A stale callback from another tab must not invalidate a newer flow.
+    clearOAuthTransaction(response.cookies, config);
+
+    if (request.nextUrl.searchParams.has("error")) {
+      throw new CustomerAuthFlowError(
+        "provider-error",
+        "Shopify returned an authorization error.",
+      );
+    }
+
+    const code = request.nextUrl.searchParams.get("code");
+
+    if (!code) {
+      throw new CustomerAuthFlowError(
+        "code-missing",
+        "The Shopify authorization code is missing.",
+      );
+    }
+
+    let discovery: OpenIdDiscovery;
+
+    try {
+      discovery = await getOpenIdDiscovery(config);
+    } catch {
+      throw new CustomerAuthFlowError(
+        "discovery-failed",
+        "Shopify OpenID discovery failed during the callback.",
+      );
+    }
+
+    const session = await exchangeAuthorizationCode(
+      code,
+      transaction.nonce,
+      config,
+      discovery,
     );
-  }
+    const identity = await getAuthenticatedCustomerIdentity(
+      session.accessToken,
+    );
 
-  const session = await exchangeAuthorizationCode(
-    code,
-    transaction.nonce,
-    config,
-    discovery,
-  );
+    if (
+      !identity.email ||
+      !customerEmailsMatch(identity.email, transaction.expectedEmail)
+    ) {
+      throw new CustomerAuthFlowError(
+        identity.email
+          ? "authenticated-email-mismatch"
+          : "authenticated-email-unavailable",
+        "The authenticated Shopify email did not match this sign-in request.",
+      );
+    }
 
-  try {
-    await setStoredSession(response.cookies, config, session);
-  } catch {
+    if (transaction.registration) {
+      await completePendingCustomerProfile(
+        session.accessToken,
+        transaction.registration,
+        identity,
+      );
+    }
+
+    try {
+      await setStoredSession(response.cookies, config, session);
+    } catch {
+      throw new CustomerAuthFlowError(
+        "session-storage-failed",
+        "The customer session could not be stored.",
+      );
+    }
+
+    if (transaction.registration) {
+      const pendingRegistration = await readPendingCustomerRegistration(
+        request,
+      );
+
+      if (
+        pendingRegistration &&
+        pendingRegistrationsMatch(
+          pendingRegistration,
+          transaction.registration,
+        )
+      ) {
+        clearPendingRegistrationCookie(response.cookies, config);
+      }
+    }
+  } catch (error) {
+    if (error instanceof CustomerAuthFlowError) {
+      throw new CustomerAuthFlowError(
+        error.code,
+        error.message,
+        transaction.returnTo,
+      );
+    }
+
     throw new CustomerAuthFlowError(
-      "session-storage-failed",
-      "The customer session could not be stored.",
+      "unexpected",
+      "The customer authorization callback failed unexpectedly.",
+      transaction.returnTo,
     );
   }
 
@@ -1346,6 +1894,7 @@ export async function beginCustomerLogout(
   const config = getConfig();
   const session = await readStoredSession(request.cookies);
   clearOAuthTransaction(response.cookies, config);
+  clearPendingRegistrationCookie(response.cookies, config);
   clearStoredSession(response.cookies, config);
 
   const postLogoutUrl = new URL("/account", config.siteOrigin);
@@ -1389,6 +1938,31 @@ export function customerAuthErrorUrl(
   return url;
 }
 
+export function customerSignInErrorUrl(
+  request: NextRequest,
+  stage: CustomerAuthFailureCode,
+  returnTo?: string | null,
+): URL {
+  let origin: string;
+
+  try {
+    origin = getConfig().siteOrigin;
+  } catch {
+    origin = request.nextUrl.origin;
+  }
+
+  const url = new URL("/account/sign-in", origin);
+  url.searchParams.set(
+    "status",
+    stage === "authenticated-email-mismatch"
+      ? "email-mismatch"
+      : "unavailable",
+  );
+  url.searchParams.set("stage", stage);
+  url.searchParams.set("returnTo", safeCustomerReturnTo(returnTo ?? null));
+  return url;
+}
+
 export function clearCustomerAuthCookies(
   response: NextResponse,
 ): void {
@@ -1396,6 +1970,14 @@ export function clearCustomerAuthCookies(
     const config = getConfig();
     clearOAuthTransaction(response.cookies, config);
     clearStoredSession(response.cookies, config);
+  } catch {
+    // No correctly scoped cookie can be cleared without valid configuration.
+  }
+}
+
+export function clearCustomerSessionCookies(response: NextResponse): void {
+  try {
+    clearStoredSession(response.cookies, getConfig());
   } catch {
     // No correctly scoped cookie can be cleared without valid configuration.
   }

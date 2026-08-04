@@ -3,6 +3,7 @@ import {
   beginCustomerLogout,
   clearCustomerAuthCookies,
   customerAuthErrorUrl,
+  isTrustedCustomerAuthPost,
 } from "@/lib/shopify/customer-auth";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +16,14 @@ function preventCaching(response: NextResponse): NextResponse {
 }
 
 async function logout(request: NextRequest) {
+  if (!isTrustedCustomerAuthPost(request)) {
+    return preventCaching(
+      new NextResponse("The sign-out request could not be verified.", {
+        status: 403,
+      }),
+    );
+  }
+
   const response = preventCaching(
     NextResponse.redirect(new URL("/account", request.url), 303),
   );

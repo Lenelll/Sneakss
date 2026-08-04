@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   customerAccountFetch,
-  getCustomerSession,
+  getCustomerSessionState,
   isCustomerAuthFailureCode,
   isCustomerAuthConfigured,
 } from "@/lib/shopify/customer-auth";
@@ -34,7 +35,14 @@ type CustomerOverview = {
 export default async function AccountPage({
   searchParams,
 }: AccountPageProps) {
-  const session = await getCustomerSession();
+  const sessionState = await getCustomerSessionState();
+
+  if (sessionState.status === "refresh-required") {
+    redirect("/account/auth/session?returnTo=%2Faccount");
+  }
+
+  const session =
+    sessionState.status === "valid" ? sessionState.session : null;
   const params = await searchParams;
   const authValue = Array.isArray(params.auth) ? params.auth[0] : params.auth;
   const stageValue = Array.isArray(params.stage)
@@ -90,9 +98,9 @@ export default async function AccountPage({
 
           <ol className="mt-9 grid gap-4 sm:grid-cols-3">
             {[
-              ["01", "Enter your email"],
-              ["02", "Receive a one-time code"],
-              ["03", "Access orders and checkout"],
+              ["01", "Create your profile"],
+              ["02", "Verify your email"],
+              ["03", "Shop with your account"],
             ].map(([number, label]) => (
               <li
                 className="rounded-2xl border border-[#D8D8D0] bg-white/60 p-4"

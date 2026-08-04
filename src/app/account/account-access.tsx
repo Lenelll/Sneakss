@@ -51,11 +51,11 @@ export function AccountAccess({
       ) : (
         <>
           <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#151713]">
-            Sign in without a password
+            Create or access your account
           </h2>
           <p className="mt-3 text-sm leading-6 text-[#686B64]">
-            Shopify will securely ask for your email and send a six-digit
-            one-time code. First-time customers get an account automatically.
+            New customers start with their name and email. Returning customers
+            sign in with a secure six-digit email code—no password required.
           </p>
 
           {authError ? (
@@ -73,16 +73,24 @@ export function AccountAccess({
           ) : null}
 
           {configured ? (
-            <a
-              className="mt-7 flex w-full items-center justify-center rounded-xl bg-[#0E4E3E] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#123F35] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E4E3E]"
-              href="/account/auth/login?returnTo=/account"
-            >
-              Continue with email
-            </a>
+            <div className="mt-7 grid gap-3">
+              <Link
+                className="flex w-full items-center justify-center rounded-xl bg-[#0E4E3E] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#123F35] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E4E3E]"
+                href="/account/sign-up?returnTo=/account"
+              >
+                Create account
+              </Link>
+              <Link
+                className="flex w-full items-center justify-center rounded-xl border border-[#BFC1B9] px-5 py-3 text-sm font-semibold text-[#151713] transition hover:border-[#151713]"
+                href="/account/sign-in?returnTo=/account"
+              >
+                Sign in
+              </Link>
+            </div>
           ) : (
             <div className="mt-7 rounded-xl border border-[#E0B33D]/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]">
-              Customer sign-in is waiting for the final Shopify domain,
-              Storefront token, callback URL, and session secret.
+              Customer sign-in is waiting for the Shopify Customer Account
+              client, callback URL, and session secret.
             </div>
           )}
         </>

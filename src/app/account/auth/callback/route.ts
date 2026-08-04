@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  clearCustomerAuthCookies,
-  customerAuthErrorUrl,
+  customerSignInErrorUrl,
   finishCustomerAuthorization,
   getCustomerAuthFailureCode,
+  getCustomerAuthReturnTo,
 } from "@/lib/shopify/customer-auth";
 
 export const dynamic = "force-dynamic";
@@ -26,14 +26,14 @@ export async function GET(request: NextRequest) {
     return preventCaching(response);
   } catch (error) {
     const stage = getCustomerAuthFailureCode(error);
+    const returnTo = getCustomerAuthReturnTo(error);
 
     // Log only the fixed diagnostic code. Never log the callback URL, OAuth
     // code, state, cookies, token response, customer email, or secrets.
     console.error("[customer-auth] callback failed", { stage });
-    clearCustomerAuthCookies(response);
     response.headers.set(
       "Location",
-      customerAuthErrorUrl(request, "session", stage).toString(),
+      customerSignInErrorUrl(request, stage, returnTo).toString(),
     );
     return preventCaching(response);
   }

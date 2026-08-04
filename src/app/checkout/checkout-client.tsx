@@ -9,6 +9,7 @@ type CheckoutClientProps = {
   storefrontConnected: boolean;
   customerAccountsConnected: boolean;
   signedIn: boolean;
+  resumeCheckout: boolean;
   checkoutError?: string;
 };
 
@@ -16,6 +17,7 @@ export function CheckoutClient({
   storefrontConnected,
   customerAccountsConnected,
   signedIn,
+  resumeCheckout,
   checkoutError,
 }: CheckoutClientProps) {
   const {
@@ -93,6 +95,16 @@ export function CheckoutClient({
         </p>
       )}
 
+      {resumeCheckout && signedIn && !checkoutError ? (
+        <p
+          className="mt-8 rounded-2xl border border-[#0E4E3E]/25 bg-[#EEF7F3] p-4 text-sm leading-6 text-[#0E4E3E]"
+          role="status"
+        >
+          Sign-in complete. Review your order, then continue to secure
+          Shopify checkout below.
+        </p>
+      ) : null}
+
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_25rem] lg:items-start lg:gap-14">
         <div>
           <div className="rounded-3xl border border-[#D8D8D0] bg-white p-6 sm:p-8">
@@ -138,12 +150,20 @@ export function CheckoutClient({
             </ul>
 
             {!signedIn && customerAccountsConnected ? (
-              <a
-                className="mt-7 inline-flex rounded-xl bg-[#0E4E3E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#123F35]"
-                href="/account/auth/login?returnTo=/checkout"
-              >
-                Sign in to continue
-              </a>
+              <div className="mt-7 flex flex-wrap items-center gap-4">
+                <Link
+                  className="inline-flex rounded-xl bg-[#0E4E3E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#123F35]"
+                  href="/account/sign-up?returnTo=/checkout"
+                >
+                  Create account to continue
+                </Link>
+                <Link
+                  className="text-sm font-semibold text-[#0E4E3E] underline decoration-[#E0B33D] decoration-2 underline-offset-4"
+                  href="/account/sign-in?returnTo=/checkout"
+                >
+                  Sign in with email
+                </Link>
+              </div>
             ) : (
               <Link
                 className="mt-7 inline-flex text-sm font-semibold text-[#0E4E3E] underline decoration-[#E0B33D] decoration-2 underline-offset-4"

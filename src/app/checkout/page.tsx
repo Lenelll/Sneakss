@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { getCommerceReadiness } from "@/lib/commerce";
-import { getCustomerSession } from "@/lib/shopify/customer-auth";
+import { getCustomerSessionState } from "@/lib/shopify/customer-auth";
 import { CheckoutClient } from "./checkout-client";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,10 @@ export const metadata: Metadata = {
 };
 
 type CheckoutPageProps = {
-  searchParams: Promise<{ checkout?: string | string[] }>;
+  searchParams: Promise<{
+    checkout?: string | string[];
+    resume?: string | string[];
+  }>;
 };
 
 const checkoutErrors: Record<string, string> = {
@@ -27,17 +31,42 @@ export default async function CheckoutPage({
   searchParams,
 }: CheckoutPageProps) {
   const readiness = getCommerceReadiness();
-  const session = await getCustomerSession();
   const params = await searchParams;
   const status = Array.isArray(params.checkout)
     ? params.checkout[0]
     : params.checkout;
+  const resumeValue = Array.isArray(params.resume)
+    ? params.resume[0]
+    : params.resume;
+  const resumeCheckout = resumeValue === "1";
+  const sessionState = await getCustomerSessionState();
+
+  if (sessionState.status === "refresh-required") {
+    const returnTo = new URLSearchParams();
+
+    if (status) {
+      returnTo.set("checkout", status);
+    }
+
+    if (resumeCheckout) {
+      returnTo.set("resume", "1");
+    }
+
+    const checkoutPath = `/checkout${returnTo.size ? `?${returnTo}` : ""}`;
+    redirect(
+      `/account/auth/session?returnTo=${encodeURIComponent(checkoutPath)}`,
+    );
+  }
+
+  const session =
+    sessionState.status === "valid" ? sessionState.session : null;
 
   return (
     <main className="min-h-[70svh] bg-[#F5F2EA] text-[#151713]">
       <CheckoutClient
         customerAccountsConnected={readiness.customerAccountsConnected}
         checkoutError={status ? checkoutErrors[status] : undefined}
+        resumeCheckout={resumeCheckout}
         signedIn={Boolean(session)}
         storefrontConnected={readiness.storefrontConnected}
       />

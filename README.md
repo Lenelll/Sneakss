@@ -11,8 +11,10 @@ Customer Accounts, and Shopify checkout with Paystack.
 - Product and cart requests use the server-only Storefront API token. The token
   is never sent to browser JavaScript.
 - Shopify hosts passwordless customer sign-in and emails the six-digit code.
-  The storefront verifies the OIDC response and keeps Shopify tokens in an
-  encrypted, HttpOnly session cookie.
+  The storefront first collects a new customer's name and email in a short-lived
+  encrypted cookie, binds that email to the OIDC request, verifies the
+  authenticated Shopify email, and then fills missing Shopify profile names.
+  Shopify tokens stay in encrypted, HttpOnly session cookies for up to 30 days.
 - Checkout requires a signed-in customer. The current customer token is
   attached to the Shopify cart before the customer leaves for Shopify
   checkout.
@@ -74,20 +76,39 @@ Use these product conventions:
 ## Customer Accounts setup
 
 Create a **Confidential** Customer Account API client in the Headless channel
-and grant customer profile and order read permissions.
+and grant customer profile read/write and order read permissions. In
+particular, profile completion requires `customer_read_customers` and
+`customer_write_customers`.
 
-For the current private production site, register:
+For the current Vercel site, register:
 
 ```text
 Callback URL
-https://sneaker-vault-gh.bysslimited.chatgpt.site/account/auth/callback
+https://sneakss-xi.vercel.app/account/auth/callback
 
 Logout URL
-https://sneaker-vault-gh.bysslimited.chatgpt.site/account
+https://sneakss-xi.vercel.app/account
 ```
 
 Shopify does not accept an ordinary HTTP localhost callback. Use the deployed
 HTTPS site while testing the login flow.
+
+Keep `NEXT_PUBLIC_SITE_URL`, the callback/logout URLs, and the domain customers
+use to shop on the same canonical host. The cart cookie is host-only and will
+not move between a Vercel preview URL and another domain.
+
+Shopify Customer Accounts can create a customer when an unknown email
+successfully verifies, and the Customer Account API does not expose a safe
+pre-authentication email-existence lookup. The signup screen is therefore the
+recommended profile-completion path, not a hard technical gate on direct
+email sign-in. Enforcing an existing-registration-only rule later would need a
+separate server-side registration registry or a carefully protected Admin API
+integration.
+
+The storefront session has a fixed 30-day maximum. When it expires the app
+requires sign-in again, but Shopify can reuse its own customer-account session;
+the platform does not guarantee that every new authorization sends another
+email code.
 
 In **Settings → Checkout → Customer contact method**, enable **Require
 customers to sign in to their account before checkout**. Enabling customer

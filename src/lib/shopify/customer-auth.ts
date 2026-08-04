@@ -78,11 +78,6 @@ interface TokenResponse {
   readonly expires_in: number;
 }
 
-interface IdTokenClaims {
-  readonly sub: string;
-  readonly nonce?: string;
-}
-
 interface CookieReader {
   get(name: string): { value: string } | undefined;
 }
@@ -1155,10 +1150,7 @@ function parseJwtPart(value: string): Record<string, unknown> {
 // Shopify returns this token directly from its authenticated token endpoint.
 // Its Customer Account flow uses the payload to bind the response to the
 // original authorization request through the nonce.
-function readIdTokenClaims(
-  idToken: string,
-  expectedNonce: string | undefined,
-): IdTokenClaims {
+function assertIdTokenNonce(idToken: string, expectedNonce: string): void {
   const parts = idToken.split(".");
 
   if (parts.length !== 3 || parts.some((part) => part.length === 0)) {
@@ -1168,26 +1160,16 @@ function readIdTokenClaims(
   parseJwtPart(parts[0]);
   const claimsValue = parseJwtPart(parts[1]);
 
-  if (typeof claimsValue.sub !== "string" || claimsValue.sub.length === 0) {
-    throw new Error("Shopify ID token is missing its customer subject.");
-  }
-
   if (
-    expectedNonce !== undefined &&
-    (typeof claimsValue.nonce !== "string" ||
-      !constantTimeEqual(claimsValue.nonce, expectedNonce))
+    typeof claimsValue.nonce !== "string" ||
+    claimsValue.nonce.length === 0 ||
+    !constantTimeEqual(claimsValue.nonce, expectedNonce)
   ) {
     throw new CustomerAuthFlowError(
       "id-token-nonce-invalid",
       "Shopify ID token nonce validation failed.",
     );
   }
-
-  return {
-    sub: claimsValue.sub,
-    nonce:
-      typeof claimsValue.nonce === "string" ? claimsValue.nonce : undefined,
-  };
 }
 
 function isTokenResponse(value: unknown): value is TokenResponse {
@@ -1313,7 +1295,7 @@ async function exchangeAuthorizationCode(
   nonce: string,
   config: CustomerAuthConfig,
   discovery: OpenIdDiscovery,
-): Promise<StoredCustomerSession> {
+): Promise<Omit<StoredCustomerSession, "subject">> {
   const token = await requestTokens(
     config,
     discovery,
@@ -1332,10 +1314,8 @@ async function exchangeAuthorizationCode(
     );
   }
 
-  let claims: IdTokenClaims;
-
   try {
-    claims = readIdTokenClaims(token.id_token, nonce);
+    assertIdTokenNonce(token.id_token, nonce);
   } catch (error) {
     if (error instanceof CustomerAuthFlowError) {
       throw error;
@@ -1355,7 +1335,6 @@ async function exchangeAuthorizationCode(
     accessTokenExpiresAt: now + token.expires_in * 1_000,
     absoluteExpiresAt: now + SESSION_MAX_AGE_SECONDS * 1_000,
     createdAt: now,
-    subject: claims.sub,
   };
 }
 
@@ -1550,6 +1529,7 @@ export async function customerAccountFetch<TData>(
 }
 
 interface AuthenticatedCustomerIdentity {
+  readonly id: string;
   readonly email: string | null;
   readonly firstName: string | null;
   readonly lastName: string | null;
@@ -1557,6 +1537,7 @@ interface AuthenticatedCustomerIdentity {
 
 type AuthenticatedCustomerIdentityResponse = {
   readonly customer: {
+    readonly id: string;
     readonly firstName: string | null;
     readonly lastName: string | null;
     readonly emailAddress: {
@@ -1575,6 +1556,7 @@ async function getAuthenticatedCustomerIdentity(
       accessToken,
       `query AuthenticatedCustomerIdentity {
         customer {
+          id
           firstName
           lastName
           emailAddress {
@@ -1592,12 +1574,24 @@ async function getAuthenticatedCustomerIdentity(
 
   const customer = data?.customer;
 
+  if (
+    !customer ||
+    typeof customer.id !== "string" ||
+    customer.id.length === 0
+  ) {
+    throw new CustomerAuthFlowError(
+      "authenticated-email-unavailable",
+      "The authenticated Shopify customer identity could not be read.",
+    );
+  }
+
   return {
-    email: normalizeCustomerEmail(customer?.emailAddress?.emailAddress),
+    id: customer.id,
+    email: normalizeCustomerEmail(customer.emailAddress?.emailAddress),
     firstName:
-      typeof customer?.firstName === "string" ? customer.firstName : null,
+      typeof customer.firstName === "string" ? customer.firstName : null,
     lastName:
-      typeof customer?.lastName === "string" ? customer.lastName : null,
+      typeof customer.lastName === "string" ? customer.lastName : null,
   };
 }
 
@@ -1814,14 +1808,14 @@ export async function finishCustomerAuthorization(
       );
     }
 
-    const session = await exchangeAuthorizationCode(
+    const exchangedSession = await exchangeAuthorizationCode(
       code,
       transaction.nonce,
       config,
       discovery,
     );
     const identity = await getAuthenticatedCustomerIdentity(
-      session.accessToken,
+      exchangedSession.accessToken,
     );
 
     if (
@@ -1838,11 +1832,16 @@ export async function finishCustomerAuthorization(
 
     if (transaction.registration) {
       await completePendingCustomerProfile(
-        session.accessToken,
+        exchangedSession.accessToken,
         transaction.registration,
         identity,
       );
     }
+
+    const session: StoredCustomerSession = {
+      ...exchangedSession,
+      subject: identity.id,
+    };
 
     try {
       await setStoredSession(response.cookies, config, session);

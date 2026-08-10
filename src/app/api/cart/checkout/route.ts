@@ -3,7 +3,6 @@ import {
   extractShopifyBuyerIp,
   getShopifyCart,
   isShopifyConfigured,
-  updateShopifyCartBuyerIdentity,
 } from "@/lib/shopify";
 import {
   isCustomerAuthConfigured,
@@ -97,16 +96,17 @@ export async function POST(request: NextRequest) {
       return withSession(redirect(request, "/cart?checkout=empty"));
     }
 
-    const { cart } = await updateShopifyCartBuyerIdentity(
-      currentCart.id,
-      { customerAccessToken: authenticatedSession.accessToken },
-      { buyerIp },
-    );
-    const checkoutUrl = trustedCheckoutUrl(cart.checkoutUrl);
+    const checkoutUrl = trustedCheckoutUrl(currentCart.checkoutUrl);
 
     if (!checkoutUrl) {
       return withSession(redirect(request, "/checkout?checkout=invalid"));
     }
+
+    // Shopify supports silent Customer Accounts SSO as an alternative to
+    // mutating the cart with a customer access token. The customer has already
+    // authenticated in this app, and Shopify verifies its own account session
+    // when the hosted checkout opens.
+    checkoutUrl.searchParams.set("sso", "silent");
 
     const response = NextResponse.redirect(checkoutUrl, 303);
     return withSession(response);

@@ -21,6 +21,7 @@ type AccountPageProps = {
   searchParams: Promise<{
     auth?: string | string[];
     stage?: string | string[];
+    prefs?: string | string[];
   }>;
 };
 
@@ -48,10 +49,13 @@ export default async function AccountPage({
   const stageValue = Array.isArray(params.stage)
     ? params.stage[0]
     : params.stage;
+  const prefsValue = Array.isArray(params.prefs) ? params.prefs[0] : params.prefs;
   const authStage = isCustomerAuthFailureCode(stageValue)
     ? stageValue
     : undefined;
   let customerName = "";
+  let customerFirstName = "";
+  let customerLastName = "";
   let customerEmail = "";
 
   if (session) {
@@ -74,6 +78,8 @@ export default async function AccountPage({
       ]
         .filter(Boolean)
         .join(" ");
+      customerFirstName = data.customer?.firstName ?? "";
+      customerLastName = data.customer?.lastName ?? "";
       customerEmail = data.customer?.emailAddress?.emailAddress ?? "";
     } catch {
       // A valid session can still render safely if profile lookup is delayed.
@@ -136,6 +142,9 @@ export default async function AccountPage({
           configured={isCustomerAuthConfigured()}
           customerEmail={customerEmail}
           customerName={customerName}
+          customerFirstName={customerFirstName}
+          customerLastName={customerLastName}
+          prefsStatus={prefsValue}
           signedIn={Boolean(session)}
         />
       </section>

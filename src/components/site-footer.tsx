@@ -38,9 +38,6 @@ export function SiteFooter() {
               A considered sneaker destination for Ghana, built around useful
               sizing, honest availability and a smooth online experience.
             </p>
-            <p className="mt-5 inline-flex rounded-full border border-[#E0B33D]/60 px-4 py-2 text-[0.65rem] font-semibold tracking-[0.16em] text-[#F4D274] uppercase">
-              Preview catalog · Not yet accepting orders
-            </p>
           </div>
 
           <FooterColumn heading="Shop" links={shopLinks} />

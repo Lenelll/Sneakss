@@ -46,7 +46,10 @@ function isSignInStatus(value: string | undefined): value is SignInStatus {
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = await searchParams;
-  const returnTo = safeCustomerReturnTo(firstValue(params.returnTo) ?? null);
+  const returnTo = safeCustomerReturnTo(
+    firstValue(params.returnTo) ?? null,
+    "/",
+  );
   const status = firstValue(params.status);
   const stageValue = firstValue(params.stage);
   const diagnosticStage = isCustomerAuthFailureCode(stageValue)

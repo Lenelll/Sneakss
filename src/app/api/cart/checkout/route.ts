@@ -13,6 +13,8 @@ import {
 export const dynamic = "force-dynamic";
 
 const CART_COOKIE = "svgh_shopify_cart";
+const CHECKOUT_RETURN_PATH = "/checkout?resume=1";
+const CHECKOUT_ACCOUNT_SIGNIN_ROUTE = "/account/sign-in";
 
 function localUrl(request: NextRequest, path: string) {
   return new URL(path, request.nextUrl.origin);
@@ -63,10 +65,9 @@ export async function POST(request: NextRequest) {
   const session = await resolveCustomerSession(request);
 
   if (!session) {
-    return redirect(
-      request,
-      "/account/sign-in?returnTo=/checkout%3Fresume%3D1",
-    );
+    const signInUrl = new URL(CHECKOUT_ACCOUNT_SIGNIN_ROUTE, request.nextUrl.origin);
+    signInUrl.searchParams.set("returnTo", CHECKOUT_RETURN_PATH);
+    return NextResponse.redirect(signInUrl, 303);
   }
 
   const authenticatedSession = session;
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
   const buyerIp = getBuyerIp(request);
 
   if (!cartId) {
-    return withSession(redirect(request, "/cart?checkout=empty"));
+    return withSession(redirect(request, "/checkout?checkout=empty"));
   }
 
   if (!buyerIp) {
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
     const currentCart = await getShopifyCart(cartId, { buyerIp });
 
     if (!currentCart || currentCart.lines.length === 0) {
-      return withSession(redirect(request, "/cart?checkout=empty"));
+      return withSession(redirect(request, "/checkout?checkout=empty"));
     }
 
     const checkoutUrl = trustedCheckoutUrl(currentCart.checkoutUrl);

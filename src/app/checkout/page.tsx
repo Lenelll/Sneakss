@@ -25,7 +25,16 @@ const checkoutErrors: Record<string, string> = {
   verification: "The checkout request could not be verified. Please try again.",
   invalid: "Shopify returned an invalid checkout destination.",
   unavailable: "Shopify checkout is temporarily unavailable. Please try again.",
+  empty: "Your cart is empty. Add a pair before checkout.",
 };
+
+type CheckoutStatus =
+  | "configuration"
+  | "verification"
+  | "invalid"
+  | "unavailable"
+  | "empty"
+  | "none";
 
 export default async function CheckoutPage({
   searchParams,
@@ -65,7 +74,12 @@ export default async function CheckoutPage({
     <main className="min-h-[70svh] bg-[#F5F2EA] text-[#151713]">
       <CheckoutClient
         customerAccountsConnected={readiness.customerAccountsConnected}
-        checkoutError={status ? checkoutErrors[status] : undefined}
+        checkoutError={
+          status && status in checkoutErrors ? checkoutErrors[status] : undefined
+        }
+        checkoutStatus={
+          status && status in checkoutErrors ? (status as CheckoutStatus) : "none"
+        }
         resumeCheckout={resumeCheckout}
         signedIn={Boolean(session)}
         storefrontConnected={readiness.storefrontConnected}

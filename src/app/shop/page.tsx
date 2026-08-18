@@ -55,14 +55,12 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
         <div className="mx-auto max-w-[1440px]">
           <div className="mb-5 flex flex-wrap items-center gap-3">
             <span className="rounded-full bg-[#E0B33D] px-3 py-1 text-[11px] font-bold tracking-[0.16em] text-[#151713] uppercase">
-              {catalog.source === "shopify"
-                ? "Live catalogue"
-                : "Preview catalogue"}
+              Sneaker collection
             </span>
             <span className="text-xs font-semibold tracking-[0.14em] text-[#686B64] uppercase">
               {catalog.source === "shopify"
                 ? "Shopify inventory · EU sizing"
-                : "Temporary products · EU sizing"}
+                : "Sneaker-ready EU sizing"}
             </span>
           </div>
           <h1 className="max-w-4xl text-5xl leading-[0.94] font-semibold tracking-[-0.055em] sm:text-7xl lg:text-8xl">
@@ -71,7 +69,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
           <p className="mt-7 max-w-2xl text-base leading-7 text-[#5A5E56] sm:text-lg">
             {catalog.source === "shopify"
               ? "Browse current pairs and live EU size availability from the Sneaker Vault GH inventory."
-              : catalog.notice}
+              : "Browse the collection and continue using the sample catalog while your final products sync from Shopify."}
           </p>
         </div>
       </section>

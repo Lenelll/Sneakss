@@ -76,13 +76,13 @@ export function AccountAccess({
             <div className="mt-7 grid gap-3">
               <Link
                 className="flex w-full items-center justify-center rounded-xl bg-[#0E4E3E] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#123F35] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E4E3E]"
-                href="/account/sign-up?returnTo=/account"
+                href="/account/sign-up?returnTo=/"
               >
                 Create account
               </Link>
               <Link
                 className="flex w-full items-center justify-center rounded-xl border border-[#BFC1B9] px-5 py-3 text-sm font-semibold text-[#151713] transition hover:border-[#151713]"
-                href="/account/sign-in?returnTo=/account"
+                href="/account/sign-in?returnTo=/"
               >
                 Sign in
               </Link>

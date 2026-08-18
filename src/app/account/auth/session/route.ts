@@ -17,6 +17,7 @@ function preventCaching(response: NextResponse): NextResponse {
 export async function GET(request: NextRequest) {
   const returnTo = safeCustomerReturnTo(
     request.nextUrl.searchParams.get("returnTo"),
+    "/",
   );
   const session = await resolveCustomerSession(request);
 

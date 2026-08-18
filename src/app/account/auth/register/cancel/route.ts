@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let returnTo = "/account";
+  let returnTo = "/";
 
   const formData = await readSmallUrlEncodedForm(request);
 

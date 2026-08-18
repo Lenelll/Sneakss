@@ -2,12 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  useEffect,
-  useRef,
-  useState,
-  type FormEvent,
-} from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { CartDrawer } from "./cart-drawer";
 import { useStore } from "./store-provider";
@@ -30,24 +25,9 @@ export function SiteHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const { itemCount, openCart } = useStore();
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const searchDialogRef = useRef<HTMLDialogElement>(null);
   const menuDialogRef = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    const dialog = searchDialogRef.current;
-
-    if (!dialog) {
-      return;
-    }
-
-    if (isSearchOpen && !dialog.open) {
-      dialog.showModal();
-    } else if (!isSearchOpen && dialog.open) {
-      dialog.close();
-    }
-  }, [isSearchOpen]);
+  const [searchValue, setSearchValue] = useState("");
 
   useEffect(() => {
     const dialog = menuDialogRef.current;
@@ -67,7 +47,7 @@ export function SiteHeader() {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const query = String(formData.get("q") ?? "").trim();
-    setIsSearchOpen(false);
+    setSearchValue("");
     router.push(query ? `/shop?q=${encodeURIComponent(query)}` : "/shop");
   }
 
@@ -75,7 +55,7 @@ export function SiteHeader() {
     <>
       <header className="sticky top-0 z-40 border-b border-[#D8D8D0] bg-[#F5F2EA]/95 text-[#151713] backdrop-blur">
         <div className="bg-[#0E4E3E] px-4 py-2 text-center text-[0.62rem] font-semibold tracking-[0.2em] text-white uppercase">
-          Demo storefront · EU sizing · Prices in Ghana cedis
+          EU sizing · Prices in Ghana cedis
         </div>
         <div className="mx-auto flex h-[4.75rem] max-w-[90rem] items-center justify-between gap-5 px-4 sm:px-6 lg:px-10">
           <button
@@ -132,14 +112,31 @@ export function SiteHeader() {
           </nav>
 
           <div className="flex items-center justify-end gap-1 sm:gap-2">
-            <button
-              type="button"
-              className="rounded-lg px-2 py-2 text-xs font-semibold tracking-[0.08em] uppercase transition-colors hover:bg-white sm:px-3"
-              onClick={() => setIsSearchOpen(true)}
+            <form
               aria-label="Search the catalog"
+              className="relative flex flex-1 items-center sm:min-w-[18rem]"
+              onSubmit={submitSearch}
             >
-              Search
-            </button>
+              <label htmlFor="desktop-search" className="sr-only">
+                Search the catalog
+              </label>
+              <input
+                id="desktop-search"
+                autoComplete="off"
+                className="h-9 w-full rounded-lg border border-[#D8D8D0] bg-white px-3 pr-14 text-sm outline-none placeholder:text-[#8B8D86] focus:border-[#0E4E3E] focus:ring-2 focus:ring-[#0E4E3E]/20"
+                name="q"
+                onChange={(event) => setSearchValue(event.target.value)}
+                placeholder="Search sneakers..."
+                type="search"
+                value={searchValue}
+              />
+              <button
+                type="submit"
+                className="absolute right-1 top-1 h-7 rounded-md bg-[#0E4E3E] px-3 text-xs font-semibold text-white transition hover:bg-[#123F35]"
+              >
+                Search
+              </button>
+            </form>
             <Link
               href="/account"
               className="hidden rounded-lg px-3 py-2 text-xs font-semibold tracking-[0.08em] uppercase transition-colors hover:bg-white sm:block"
@@ -158,73 +155,33 @@ export function SiteHeader() {
         </div>
       </header>
 
-      <dialog
-        ref={searchDialogRef}
-        aria-labelledby="search-dialog-title"
-        className="m-0 h-dvh max-h-none w-full max-w-none bg-[#F5F2EA] p-0 text-[#151713] backdrop:bg-[#151713]/45"
-        onCancel={(event) => {
-          event.preventDefault();
-          setIsSearchOpen(false);
-        }}
-        onClose={() => setIsSearchOpen(false)}
-      >
-        <div className="mx-auto flex min-h-full max-w-5xl flex-col px-5 py-6 sm:px-10 sm:py-10">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold tracking-[0.2em] text-[#686B64] uppercase">
-              Search the vault
-            </p>
-            <button
-              type="button"
-              className="rounded-full border border-[#D8D8D0] bg-white px-4 py-2 text-xs font-semibold tracking-[0.1em] uppercase hover:border-[#151713]"
-              onClick={() => setIsSearchOpen(false)}
-            >
-              Close
-            </button>
-          </div>
-
-          <div className="my-auto py-16">
-            <h2
-              id="search-dialog-title"
-              className="max-w-3xl text-4xl font-semibold tracking-[-0.055em] sm:text-6xl"
-            >
-              What pair are you looking for?
-            </h2>
-            <form
-              onSubmit={submitSearch}
-              className="mt-10 flex flex-col gap-3 border-b-2 border-[#151713] pb-3 sm:flex-row"
-            >
-              <input
-                autoFocus
-                type="search"
-                name="q"
-                placeholder="Try “runner”, “green” or a brand"
-                aria-label="Search products"
-                className="min-w-0 flex-1 bg-transparent py-3 text-xl outline-none placeholder:text-[#8B8D86] sm:text-3xl"
-              />
-              <button
-                type="submit"
-                className="self-start rounded-xl bg-[#0E4E3E] px-6 py-3 text-sm font-semibold text-white hover:bg-[#0A3E31] sm:self-center"
-              >
-                See results
-              </button>
-            </form>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {["Lifestyle", "Running", "Basketball", "Skate", "Trail"].map(
-                (category) => (
-                  <Link
-                    key={category}
-                    href={`/shop?q=${encodeURIComponent(category)}`}
-                    onClick={() => setIsSearchOpen(false)}
-                    className="rounded-full border border-[#D8D8D0] bg-white px-4 py-2 text-sm transition-colors hover:border-[#0E4E3E] hover:text-[#0E4E3E]"
-                  >
-                    {category}
-                  </Link>
-                ),
-              )}
-            </div>
-          </div>
-        </div>
-      </dialog>
+      <div className="bg-[#0E4E3E] px-4 py-2 sm:hidden">
+        <form
+          aria-label="Search the catalog"
+          className="mx-auto flex max-w-3xl items-center gap-2"
+          onSubmit={submitSearch}
+        >
+          <label htmlFor="mobile-search" className="sr-only">
+            Search the catalog
+          </label>
+          <input
+            id="mobile-search"
+            autoComplete="off"
+            className="h-10 w-full rounded-lg border border-[#D8D8D0] bg-white px-3 text-sm outline-none placeholder:text-[#8B8D86] focus:border-[#0E4E3E] focus:ring-2 focus:ring-[#0E4E3E]/20"
+            name="q"
+            onChange={(event) => setSearchValue(event.target.value)}
+            placeholder="Search sneakers..."
+            type="search"
+            value={searchValue}
+          />
+          <button
+            type="submit"
+            className="rounded-lg bg-[#151713] px-3 py-2 text-xs font-semibold uppercase text-white"
+          >
+            Search
+          </button>
+        </form>
+      </div>
 
       <dialog
         ref={menuDialogRef}

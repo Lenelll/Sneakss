@@ -22,6 +22,7 @@ function preventCaching(response: NextResponse): NextResponse {
 export async function GET(request: NextRequest) {
   const returnTo = safeCustomerReturnTo(
     request.nextUrl.searchParams.get("returnTo"),
+    "/",
   );
   const url = new URL("/account/sign-in", request.nextUrl.origin);
   url.searchParams.set("returnTo", returnTo);
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
   if (!formData) {
     return preventCaching(
       NextResponse.redirect(
-        signInStatusUrl(request, "invalid", "/account"),
+        signInStatusUrl(request, "invalid", "/"),
         303,
       ),
     );
@@ -62,6 +63,7 @@ export async function POST(request: NextRequest) {
   const email = normalizeCustomerEmail(formData.get("email"));
   let returnTo = safeCustomerReturnTo(
     formData.get("returnTo"),
+    "/",
   );
 
   if (!email) {

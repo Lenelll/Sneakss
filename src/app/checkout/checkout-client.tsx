@@ -11,6 +11,13 @@ type CheckoutClientProps = {
   signedIn: boolean;
   resumeCheckout: boolean;
   checkoutError?: string;
+  checkoutStatus:
+    | "configuration"
+    | "verification"
+    | "invalid"
+    | "unavailable"
+    | "empty"
+    | "none";
 };
 
 export function CheckoutClient({
@@ -19,6 +26,7 @@ export function CheckoutClient({
   signedIn,
   resumeCheckout,
   checkoutError,
+  checkoutStatus,
 }: CheckoutClientProps) {
   const {
     lines,
@@ -36,6 +44,28 @@ export function CheckoutClient({
     customerAccountsConnected &&
     signedIn &&
     lines.length > 0;
+
+  const checkoutUnavailableReason =
+    checkoutStatus === "configuration"
+      ? "Storefront configuration is incomplete. Please recheck Shopify account setup in the app."
+      : checkoutStatus === "verification"
+        ? "Checkout verification failed. Please retry from your cart."
+        : checkoutStatus === "invalid"
+          ? "The checkout destination is invalid. Please retry."
+          : checkoutStatus === "unavailable"
+            ? "Shopify checkout is temporarily unavailable. Try again shortly."
+            : checkoutStatus === "empty"
+              ? "No items are in your cart."
+              : canCheckout
+                ? "You will leave this storefront for Shopify checkout."
+                : !signedIn
+                  ? "Sign in is required before proceeding."
+                  : !customerAccountsConnected
+                    ? "Customer account integration is not configured."
+                    : !isLiveCart || !storefrontConnected
+                      ? "Use live Shopify products to checkout."
+                      : "Update cart before checkout.";
+  const disabledReason = checkoutError || cartError || checkoutUnavailableReason;
 
   if (!isHydrated) {
     return (
@@ -252,9 +282,7 @@ export function CheckoutClient({
             className="mt-3 text-xs leading-5 text-white/65"
             id="checkout-disabled-reason"
           >
-            {canCheckout
-              ? "You will leave this storefront for Shopify checkout."
-              : "Use a live Shopify cart and sign in before checkout."}
+            {disabledReason}
           </p>
           <Link
             className="mt-5 block text-center text-sm text-white underline underline-offset-4"

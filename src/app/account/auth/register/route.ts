@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
   if (!formData) {
     return preventCaching(
       NextResponse.redirect(
-        statusUrl(request, "/account/sign-up", "invalid", "/account"),
+        statusUrl(request, "/account/sign-up", "invalid", "/"),
         303,
       ),
     );

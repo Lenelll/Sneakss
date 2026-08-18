@@ -34,10 +34,7 @@ export default async function HomePage() {
             <div className="reveal-up flex items-center gap-3">
               <span className="h-2.5 w-2.5 rounded-full bg-gold" />
               <p className="eyebrow text-white/70">
-                Accra, Ghana ·{" "}
-                {catalog.source === "shopify"
-                  ? "Live collection"
-                  : "Preview collection"}
+                Accra, Ghana · Live sneaker collection
               </p>
             </div>
 

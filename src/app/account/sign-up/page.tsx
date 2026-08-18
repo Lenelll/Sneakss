@@ -37,7 +37,10 @@ function isSignUpStatus(value: string | undefined): value is SignUpStatus {
 
 export default async function SignUpPage({ searchParams }: SignUpPageProps) {
   const params = await searchParams;
-  const returnTo = safeCustomerReturnTo(firstValue(params.returnTo) ?? null);
+  const returnTo = safeCustomerReturnTo(
+    firstValue(params.returnTo) ?? null,
+    "/",
+  );
   const status = firstValue(params.status);
   const message = isSignUpStatus(status) ? statusMessages[status] : undefined;
 

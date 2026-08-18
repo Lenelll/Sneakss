@@ -619,7 +619,7 @@ async function openJson(
 
 export function safeCustomerReturnTo(
   value: string | null,
-  fallback = "/account",
+  fallback = "/",
 ): string {
   if (
     !value ||

@@ -12,14 +12,15 @@ test.describe("checkout gating", () => {
 
   test("signed-out visitor with items is asked to sign in, not sent to Shopify", async ({
     page,
+    baseURL,
   }) => {
     await addFirstAvailableProductToBag(page);
 
     await page.goto("/checkout");
 
-    // The checkout summary renders locally…
+    // The checkout summary renders on the storefront's own host…
     await expect(page).toHaveURL(/\/checkout/);
-    expect(new URL(page.url()).hostname).toBe("localhost");
+    expect(new URL(page.url()).hostname).toBe(new URL(baseURL!).hostname);
 
     // …and requires sign-in before any Shopify handoff.
     await expect(

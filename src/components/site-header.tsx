@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
+import { BrandLogo } from "./brand-logo";
 import { CartDrawer } from "./cart-drawer";
 import { useStore } from "./store-provider";
 
@@ -70,22 +71,9 @@ export function SiteHeader() {
           <Link
             href="/"
             aria-label="Sneaker Vault GH home"
-            className="group flex shrink-0 items-center gap-3"
+            className="group flex shrink-0 items-center"
           >
-            <span
-              aria-hidden="true"
-              className="grid h-9 w-9 place-items-center rounded-xl bg-[#0E4E3E] text-[0.62rem] font-bold tracking-[0.08em] text-[#E0B33D]"
-            >
-              SV
-            </span>
-            <span className="hidden leading-none min-[390px]:block">
-              <span className="block text-[0.92rem] font-extrabold tracking-[-0.035em]">
-                SNEAKER VAULT
-              </span>
-              <span className="mt-1 block text-[0.56rem] font-semibold tracking-[0.32em] text-[#686B64]">
-                GHANA
-              </span>
-            </span>
+            <BrandLogo className="h-9 transition-colors group-hover:text-[#0E4E3E]" />
           </Link>
 
           <nav

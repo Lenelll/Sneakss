@@ -1,3 +1,4 @@
+export { BrandLogo } from "./brand-logo";
 export { CartDrawer } from "./cart-drawer";
 export { ProductCard } from "./product-card";
 export { SiteFooter } from "./site-footer";

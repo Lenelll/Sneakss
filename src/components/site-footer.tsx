@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { BrandLogo } from "./brand-logo";
+
 const shopLinks = [
   { href: "/shop", label: "All sneakers" },
   { href: "/shop?sort=newest", label: "New arrivals" },
@@ -27,12 +29,7 @@ export function SiteFooter() {
         <div className="grid gap-14 border-b border-white/20 pb-14 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
             <Link href="/" className="inline-block" aria-label="Sneaker Vault GH">
-              <span className="block text-2xl font-extrabold tracking-[-0.045em]">
-                SNEAKER VAULT
-              </span>
-              <span className="mt-2 block text-[0.65rem] font-semibold tracking-[0.38em] text-[#E0B33D]">
-                GHANA
-              </span>
+              <BrandLogo className="h-16" />
             </Link>
             <p className="mt-7 max-w-sm text-base leading-7 text-white/68">
               A considered sneaker destination for Ghana, built around useful

@@ -44,7 +44,14 @@ npm run lint
 npx tsc --noEmit
 npm run build
 npm run build:sites
+npm run test:e2e
 ```
+
+End-to-end tests use Playwright (Chromium, desktop and mobile profiles) and
+live in `tests/e2e`. They start the dev server automatically, or reuse one
+already running on port 3000. They cover route smoke checks, branding,
+catalog browsing, cart flows, and signed-out checkout gating; the live
+payment and email-code sign-in journeys remain a manual launch checklist.
 
 ## Shopify Headless setup
 

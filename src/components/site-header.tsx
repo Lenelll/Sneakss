@@ -54,8 +54,8 @@ export function SiteHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[#D8D8D0] bg-[#F5F2EA]/95 text-[#151713] backdrop-blur">
-        <div className="bg-[#0E4E3E] px-4 py-2 text-center text-[0.62rem] font-semibold tracking-[0.2em] text-white uppercase">
+      <header className="sticky top-0 z-40 border-b border-line bg-canvas/95 text-ink backdrop-blur">
+        <div className="bg-brand px-4 py-2 text-center text-[0.62rem] font-semibold tracking-[0.2em] text-white uppercase">
           EU sizing · Prices in Ghana cedis
         </div>
         <div className="mx-auto flex h-[4.75rem] max-w-[90rem] items-center justify-between gap-5 px-4 sm:px-6 lg:px-10">
@@ -73,7 +73,7 @@ export function SiteHeader() {
             aria-label="Sneaker Vault GH home"
             className="group flex shrink-0 items-center"
           >
-            <BrandLogo className="h-9 transition-colors group-hover:text-[#0E4E3E]" />
+            <BrandLogo className="h-9 transition-colors group-hover:text-brand" />
           </Link>
 
           <nav
@@ -88,8 +88,8 @@ export function SiteHeader() {
                   href={item.href}
                   className={`border-b py-2 text-sm font-medium transition-colors ${
                     active
-                      ? "border-[#0E4E3E] text-[#0E4E3E]"
-                      : "border-transparent text-[#151713] hover:text-[#0E4E3E]"
+                      ? "border-brand text-brand"
+                      : "border-transparent text-ink hover:text-brand"
                   }`}
                   aria-current={active ? "page" : undefined}
                 >
@@ -111,7 +111,7 @@ export function SiteHeader() {
               <input
                 id="desktop-search"
                 autoComplete="off"
-                className="h-9 w-full rounded-lg border border-[#D8D8D0] bg-white px-3 pr-14 text-sm outline-none placeholder:text-[#8B8D86] focus:border-[#0E4E3E] focus:ring-2 focus:ring-[#0E4E3E]/20"
+                className="h-9 w-full rounded-lg border border-line bg-white px-3 pr-14 text-sm outline-none placeholder:text-muted-soft focus:border-brand focus:ring-2 focus:ring-brand/20"
                 name="q"
                 onChange={(event) => setSearchValue(event.target.value)}
                 placeholder="Search sneakers..."
@@ -120,7 +120,7 @@ export function SiteHeader() {
               />
               <button
                 type="submit"
-                className="absolute right-1 top-1 h-7 rounded-md bg-[#0E4E3E] px-3 text-xs font-semibold text-white transition hover:bg-[#123F35]"
+                className="absolute right-1 top-1 h-7 rounded-md bg-brand px-3 text-xs font-semibold text-white transition hover:bg-brand-dark"
               >
                 Search
               </button>
@@ -133,7 +133,7 @@ export function SiteHeader() {
             </Link>
             <button
               type="button"
-              className="rounded-lg bg-[#151713] px-3 py-2 text-xs font-semibold tracking-[0.08em] text-white uppercase transition-colors hover:bg-[#0E4E3E]"
+              className="rounded-lg bg-ink px-3 py-2 text-xs font-semibold tracking-[0.08em] text-white uppercase transition-colors hover:bg-brand"
               aria-label={`Open bag with ${itemCount} ${itemCount === 1 ? "item" : "items"}`}
               onClick={openCart}
             >
@@ -143,7 +143,7 @@ export function SiteHeader() {
         </div>
       </header>
 
-      <div className="bg-[#0E4E3E] px-4 py-2 sm:hidden">
+      <div className="bg-brand px-4 py-2 sm:hidden">
         <form
           aria-label="Search the catalog"
           className="mx-auto flex max-w-3xl items-center gap-2"
@@ -155,7 +155,7 @@ export function SiteHeader() {
           <input
             id="mobile-search"
             autoComplete="off"
-            className="h-10 w-full rounded-lg border border-[#D8D8D0] bg-white px-3 text-sm outline-none placeholder:text-[#8B8D86] focus:border-[#0E4E3E] focus:ring-2 focus:ring-[#0E4E3E]/20"
+            className="h-10 w-full rounded-lg border border-line bg-white px-3 text-sm outline-none placeholder:text-muted-soft focus:border-brand focus:ring-2 focus:ring-brand/20"
             name="q"
             onChange={(event) => setSearchValue(event.target.value)}
             placeholder="Search sneakers..."
@@ -164,7 +164,7 @@ export function SiteHeader() {
           />
           <button
             type="submit"
-            className="rounded-lg bg-[#151713] px-3 py-2 text-xs font-semibold uppercase text-white"
+            className="rounded-lg bg-ink px-3 py-2 text-xs font-semibold uppercase text-white"
           >
             Search
           </button>
@@ -174,7 +174,7 @@ export function SiteHeader() {
       <dialog
         ref={menuDialogRef}
         aria-labelledby="menu-dialog-title"
-        className="m-0 h-dvh max-h-none w-[min(88vw,25rem)] max-w-none bg-[#0E4E3E] p-0 text-white shadow-2xl backdrop:bg-[#151713]/55"
+        className="m-0 h-dvh max-h-none w-[min(88vw,25rem)] max-w-none bg-brand p-0 text-white shadow-2xl backdrop:bg-ink/55"
         onCancel={(event) => {
           event.preventDefault();
           setIsMenuOpen(false);
@@ -210,7 +210,7 @@ export function SiteHeader() {
                   className="flex items-baseline justify-between border-b border-white/20 py-5 text-3xl font-semibold tracking-[-0.045em]"
                 >
                   <span>{item.label}</span>
-                  <span className="text-xs font-medium tracking-[0.15em] text-[#E0B33D]">
+                  <span className="text-xs font-medium tracking-[0.15em] text-accent">
                     0{index + 1}
                   </span>
                 </Link>

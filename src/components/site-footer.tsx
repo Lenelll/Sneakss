@@ -24,7 +24,7 @@ const policyLinks = [
 
 export function SiteFooter() {
   return (
-    <footer className="bg-[#0E4E3E] text-white">
+    <footer className="bg-brand text-white">
       <div className="mx-auto max-w-[90rem] px-5 py-16 sm:px-8 lg:px-10 lg:py-20">
         <div className="grid gap-14 border-b border-white/20 pb-14 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
@@ -62,7 +62,7 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <h2 className="text-[0.65rem] font-semibold tracking-[0.2em] text-[#E0B33D] uppercase">
+      <h2 className="text-[0.65rem] font-semibold tracking-[0.2em] text-accent uppercase">
         {heading}
       </h2>
       <ul className="mt-5 space-y-3">

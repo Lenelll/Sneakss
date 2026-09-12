@@ -24,7 +24,7 @@ export function CartClient() {
         aria-live="polite"
         className="mx-auto min-h-[24rem] max-w-[90rem] px-5 py-16 sm:px-8 lg:px-12"
       >
-        <p className="text-sm text-[#686B64]">Loading your bag…</p>
+        <p className="text-sm text-muted">Loading your bag…</p>
       </div>
     );
   }
@@ -32,18 +32,18 @@ export function CartClient() {
   if (lines.length === 0) {
     return (
       <section className="mx-auto flex min-h-[32rem] max-w-[90rem] flex-col items-start justify-center px-5 py-16 sm:px-8 lg:px-12">
-        <p className="text-xs font-semibold tracking-[0.18em] text-[#0E4E3E] uppercase">
+        <p className="text-xs font-semibold tracking-[0.18em] text-brand uppercase">
           Your bag
         </p>
         <h1 className="mt-4 text-5xl font-semibold tracking-[-0.055em] sm:text-6xl">
           The vault is empty.
         </h1>
-        <p className="mt-5 max-w-lg text-base leading-7 text-[#686B64]">
+        <p className="mt-5 max-w-lg text-base leading-7 text-muted">
           Explore the collection, choose an available EU size, and add a pair
           to continue.
         </p>
         <Link
-          className="mt-8 rounded-xl bg-[#0E4E3E] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#123F35] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E4E3E]"
+          className="mt-8 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           href="/shop"
         >
           Shop the collection
@@ -54,9 +54,9 @@ export function CartClient() {
 
   return (
     <section className="mx-auto w-full max-w-[90rem] px-5 py-12 sm:px-8 lg:px-12 lg:py-16">
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#D8D8D0] pb-8">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-8">
         <div>
-          <p className="text-xs font-semibold tracking-[0.18em] text-[#0E4E3E] uppercase">
+          <p className="text-xs font-semibold tracking-[0.18em] text-brand uppercase">
             Your bag
           </p>
           <h1 className="mt-3 text-4xl font-semibold tracking-[-0.045em] sm:text-5xl">
@@ -64,7 +64,7 @@ export function CartClient() {
           </h1>
         </div>
         <Link
-          className="text-sm font-semibold text-[#0E4E3E] underline decoration-[#E0B33D] decoration-2 underline-offset-4"
+          className="text-sm font-semibold text-brand underline decoration-accent decoration-2 underline-offset-4"
           href="/shop"
         >
           Continue shopping
@@ -75,13 +75,13 @@ export function CartClient() {
         <div>
           {cartError ? (
             <p
-              className="mb-6 rounded-2xl border border-[#E0B33D]/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]"
+              className="mb-6 rounded-2xl border border-accent/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]"
               role="alert"
             >
               {cartError}
             </p>
           ) : null}
-        <ul className="divide-y divide-[#D8D8D0]">
+        <ul className="divide-y divide-line">
           {lines.map((line) => (
             <li
               className="grid gap-5 py-7 first:pt-0 sm:grid-cols-[9rem_minmax(0,1fr)]"
@@ -103,16 +103,16 @@ export function CartClient() {
               <div className="flex min-w-0 flex-col">
                 <div className="flex items-start justify-between gap-5">
                   <div>
-                    <p className="text-xs font-semibold tracking-[0.12em] text-[#686B64] uppercase">
+                    <p className="text-xs font-semibold tracking-[0.12em] text-muted uppercase">
                       {line.product.brand}
                     </p>
                     <Link
-                      className="mt-1 block text-xl font-semibold tracking-[-0.025em] hover:text-[#0E4E3E]"
+                      className="mt-1 block text-xl font-semibold tracking-[-0.025em] hover:text-brand"
                       href={`/products/${line.product.handle}`}
                     >
                       {line.product.title}
                     </Link>
-                    <p className="mt-1 text-sm text-[#686B64]">
+                    <p className="mt-1 text-sm text-muted">
                       {line.product.colorway} · {line.variant.sizeLabel}
                     </p>
                   </div>
@@ -124,12 +124,12 @@ export function CartClient() {
                 <div className="mt-6 flex flex-wrap items-center justify-between gap-5 sm:mt-auto">
                   <div
                     aria-label={`Quantity for ${line.product.title}, ${line.variant.sizeLabel}`}
-                    className="inline-flex items-center rounded-xl border border-[#BFC1B9] bg-white"
+                    className="inline-flex items-center rounded-xl border border-line-strong bg-white"
                     role="group"
                   >
                     <button
                       aria-label={`Decrease ${line.product.title} quantity`}
-                      className="flex size-10 items-center justify-center text-lg transition hover:bg-[#F5F2EA] disabled:cursor-not-allowed disabled:opacity-40"
+                      className="flex size-10 items-center justify-center text-lg transition hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-40"
                       disabled={isPending || line.quantity <= 1}
                       onClick={() =>
                         updateQuantity(line.variantId, line.quantity - 1)
@@ -146,7 +146,7 @@ export function CartClient() {
                     </span>
                     <button
                       aria-label={`Increase ${line.product.title} quantity`}
-                      className="flex size-10 items-center justify-center text-lg transition hover:bg-[#F5F2EA] disabled:cursor-not-allowed disabled:opacity-40"
+                      className="flex size-10 items-center justify-center text-lg transition hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-40"
                       disabled={
                         line.quantity >= line.variant.inventoryQuantity ||
                         line.quantity >= 10 ||
@@ -162,7 +162,7 @@ export function CartClient() {
                   </div>
 
                   <button
-                    className="text-sm text-[#686B64] underline underline-offset-4 transition hover:text-[#B42318]"
+                    className="text-sm text-muted underline underline-offset-4 transition hover:text-[#B42318]"
                     disabled={isPending}
                     onClick={() => removeItem(line.variantId)}
                     type="button"
@@ -176,8 +176,8 @@ export function CartClient() {
         </ul>
         </div>
 
-        <aside className="h-fit rounded-3xl bg-[#0E4E3E] p-6 text-white sm:p-7 lg:sticky lg:top-28">
-          <p className="text-xs font-semibold tracking-[0.16em] text-[#E0B33D] uppercase">
+        <aside className="h-fit rounded-3xl bg-brand p-6 text-white sm:p-7 lg:sticky lg:top-28">
+          <p className="text-xs font-semibold tracking-[0.16em] text-accent uppercase">
             Order summary
           </p>
           <div className="mt-6 flex items-center justify-between border-b border-white/20 pb-5">
@@ -192,7 +192,7 @@ export function CartClient() {
               : "This preview bag uses temporary products and cannot create a real order."}
           </p>
           <Link
-            className="mt-6 block rounded-xl bg-[#E0B33D] px-5 py-3.5 text-center text-sm font-semibold text-[#151713] transition hover:bg-[#E7BF56] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="mt-6 block rounded-xl bg-accent px-5 py-3.5 text-center text-sm font-semibold text-ink transition hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             href="/checkout"
           >
             Review checkout

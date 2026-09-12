@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import { ProductCard } from "@/components/product-card";
+import { ProductCard, type ProductCardRating } from "@/components/product-card";
 import {
   EU_SIZE_SCALE,
   PRODUCT_CATEGORIES,
@@ -27,19 +27,25 @@ type SizeSelection = EuSize | "all";
 
 type ShopCatalogProps = {
   catalog: readonly Product[];
+  ratings?: Readonly<Record<string, ProductCardRating>>;
   initialQuery?: string;
+  initialCategory?: ProductCategory;
   initialSize?: EuSize;
   initialSort?: ProductSort;
 };
 
 export function ShopCatalog({
   catalog,
+  ratings = {},
   initialQuery = "",
+  initialCategory,
   initialSize,
   initialSort = "featured",
 }: ShopCatalogProps) {
   const [query, setQuery] = useState(initialQuery);
-  const [category, setCategory] = useState<CategorySelection>("all");
+  const [category, setCategory] = useState<CategorySelection>(
+    initialCategory ?? "all",
+  );
   const [brand, setBrand] = useState("all");
   const [size, setSize] = useState<SizeSelection>(initialSize ?? "all");
   const [availability, setAvailability] =
@@ -98,7 +104,7 @@ export function ShopCatalog({
   return (
     <section className="px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
       <div className="mx-auto max-w-[1440px]">
-        <div className="grid gap-4 border-b border-[#D8D8D0] pb-7 md:grid-cols-[minmax(0,1fr)_240px]">
+        <div className="grid gap-4 border-b border-line pb-7 md:grid-cols-[minmax(0,1fr)_240px]">
           <label className="block">
             <span className="sr-only">Search the catalogue</span>
             <input
@@ -106,7 +112,7 @@ export function ShopCatalog({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search by style, brand or colour"
-              className="h-14 w-full rounded-xl border border-[#C9CAC2] bg-white px-5 text-base text-[#151713] outline-none placeholder:text-[#85887F] focus:border-[#0E4E3E] focus:ring-2 focus:ring-[#0E4E3E]/20"
+              className="h-14 w-full rounded-xl border border-line-strong bg-white px-5 text-base text-ink outline-none placeholder:text-muted-soft focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
           </label>
 
@@ -115,7 +121,7 @@ export function ShopCatalog({
             <select
               value={sort}
               onChange={(event) => setSort(event.target.value as ProductSort)}
-              className="h-14 w-full appearance-none rounded-xl border border-[#C9CAC2] bg-white px-5 text-sm font-semibold text-[#151713] outline-none focus:border-[#0E4E3E] focus:ring-2 focus:ring-[#0E4E3E]/20"
+              className="h-14 w-full appearance-none rounded-xl border border-line-strong bg-white px-5 text-sm font-semibold text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
             >
               {SORT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -128,7 +134,7 @@ export function ShopCatalog({
 
         <div className="grid gap-10 pt-7 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-12">
           <aside aria-label="Product filters" className="lg:sticky lg:top-28 lg:self-start">
-            <div className="flex items-center justify-between border-b border-[#D8D8D0] pb-4">
+            <div className="flex items-center justify-between border-b border-line pb-4">
               <h2 className="text-sm font-bold tracking-[0.14em] uppercase">
                 Filter
               </h2>
@@ -136,7 +142,7 @@ export function ShopCatalog({
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="text-xs font-bold text-[#0E4E3E] underline decoration-1 underline-offset-4 hover:text-[#09382C] focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0E4E3E]"
+                  className="text-xs font-bold text-brand underline decoration-1 underline-offset-4 hover:text-brand-dark focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
                 >
                   Clear all
                 </button>
@@ -169,7 +175,7 @@ export function ShopCatalog({
                 <select
                   value={brand}
                   onChange={(event) => setBrand(event.target.value)}
-                  className="h-11 w-full appearance-none rounded-lg border border-[#C9CAC2] bg-white px-3 text-sm text-[#151713] outline-none focus:border-[#0E4E3E] focus:ring-2 focus:ring-[#0E4E3E]/20"
+                  className="h-11 w-full appearance-none rounded-lg border border-line-strong bg-white px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
                 >
                   <option value="all">All demo brands</option>
                   {brands.map((item) => (
@@ -189,8 +195,8 @@ export function ShopCatalog({
                   onClick={() => setSize("all")}
                   className={`col-span-2 min-h-10 rounded-lg border px-2 text-xs font-bold transition-colors ${
                     size === "all"
-                      ? "border-[#0E4E3E] bg-[#0E4E3E] text-white"
-                      : "border-[#C9CAC2] bg-white hover:border-[#0E4E3E]"
+                      ? "border-brand bg-brand text-white"
+                      : "border-line-strong bg-white hover:border-brand"
                   }`}
                 >
                   Any
@@ -203,8 +209,8 @@ export function ShopCatalog({
                     onClick={() => setSize(item)}
                     className={`min-h-10 rounded-lg border px-1 text-xs font-bold transition-colors ${
                       size === item
-                        ? "border-[#0E4E3E] bg-[#0E4E3E] text-white"
-                        : "border-[#C9CAC2] bg-white hover:border-[#0E4E3E]"
+                        ? "border-brand bg-brand text-white"
+                        : "border-line-strong bg-white hover:border-brand"
                     }`}
                   >
                     {item}
@@ -236,14 +242,14 @@ export function ShopCatalog({
 
           <div>
             <div className="mb-6 flex min-h-7 flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-[#686B64]" aria-live="polite">
-                <span className="font-bold text-[#151713]">
+              <p className="text-sm text-muted" aria-live="polite">
+                <span className="font-bold text-ink">
                   {filteredProducts.length}
                 </span>{" "}
                 {filteredProducts.length === 1 ? "style" : "styles"}
               </p>
               {size !== "all" ? (
-                <p className="rounded-full border border-[#0E4E3E]/25 bg-[#E6EEE9] px-3 py-1 text-xs font-bold text-[#0E4E3E]">
+                <p className="rounded-full border border-brand/25 bg-brand-tint px-3 py-1 text-xs font-bold text-brand">
                   Showing EU {size}
                 </p>
               ) : null}
@@ -252,25 +258,29 @@ export function ShopCatalog({
             {filteredProducts.length > 0 ? (
               <div className="grid grid-cols-2 gap-x-3 gap-y-9 sm:gap-x-5 sm:gap-y-12 xl:grid-cols-3">
                 {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    rating={ratings[product.handle]}
+                  />
                 ))}
               </div>
             ) : (
-              <div className="rounded-[24px] border border-[#D8D8D0] bg-white px-6 py-16 text-center sm:px-12">
-                <p className="text-xs font-bold tracking-[0.16em] text-[#0E4E3E] uppercase">
+              <div className="rounded-[24px] border border-line bg-white px-6 py-16 text-center sm:px-12">
+                <p className="text-xs font-bold tracking-[0.16em] text-brand uppercase">
                   Nothing here yet
                 </p>
                 <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em]">
                   Try a wider search.
                 </h2>
-                <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-[#686B64]">
+                <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted">
                   No demo products match every selected filter. Clear the
                   filters and build a new combination.
                 </p>
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="mt-7 rounded-xl bg-[#0E4E3E] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-[#09382C] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0E4E3E]"
+                  className="mt-7 rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
                 >
                   Clear filters
                 </button>
@@ -291,8 +301,8 @@ function FilterGroup({
   title: string;
 }>) {
   return (
-    <div className="border-b border-[#D8D8D0] py-5">
-      <h3 className="mb-3 text-xs font-bold tracking-[0.12em] text-[#686B64] uppercase">
+    <div className="border-b border-line py-5">
+      <h3 className="mb-3 text-xs font-bold tracking-[0.12em] text-muted uppercase">
         {title}
       </h3>
       {children}
@@ -316,8 +326,8 @@ function FilterButton({
       onClick={onClick}
       className={`min-h-10 rounded-lg border px-3 text-left text-sm font-semibold transition-colors ${
         active
-          ? "border-[#0E4E3E] bg-[#E6EEE9] text-[#0E4E3E]"
-          : "border-[#D8D8D0] bg-white text-[#5A5E56] hover:border-[#0E4E3E] hover:text-[#151713]"
+          ? "border-brand bg-brand-tint text-brand"
+          : "border-line bg-white text-muted hover:border-brand hover:text-ink"
       }`}
     >
       {children}

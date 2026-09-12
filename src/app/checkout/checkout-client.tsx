@@ -73,7 +73,7 @@ export function CheckoutClient({
         aria-live="polite"
         className="mx-auto min-h-[24rem] max-w-[90rem] px-5 py-16 sm:px-8 lg:px-12"
       >
-        <p className="text-sm text-[#686B64]">Preparing your summary…</p>
+        <p className="text-sm text-muted">Preparing your summary…</p>
       </div>
     );
   }
@@ -81,18 +81,18 @@ export function CheckoutClient({
   if (lines.length === 0) {
     return (
       <section className="mx-auto flex min-h-[32rem] max-w-[90rem] flex-col items-start justify-center px-5 py-16 sm:px-8 lg:px-12">
-        <p className="text-xs font-semibold tracking-[0.18em] text-[#0E4E3E] uppercase">
+        <p className="text-xs font-semibold tracking-[0.18em] text-brand uppercase">
           Checkout
         </p>
         <h1 className="mt-4 text-5xl font-semibold tracking-[-0.055em] sm:text-6xl">
           Your bag is empty.
         </h1>
-        <p className="mt-5 max-w-lg text-base leading-7 text-[#686B64]">
+        <p className="mt-5 max-w-lg text-base leading-7 text-muted">
           Choose an available EU size before continuing to secure Shopify
           checkout.
         </p>
         <Link
-          className="mt-8 rounded-xl bg-[#0E4E3E] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#123F35]"
+          className="mt-8 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
           href="/shop"
         >
           Browse the collection
@@ -104,13 +104,13 @@ export function CheckoutClient({
   return (
     <section className="mx-auto w-full max-w-[90rem] px-5 py-12 sm:px-8 lg:px-12 lg:py-16">
       <div className="max-w-3xl">
-        <p className="text-xs font-semibold tracking-[0.18em] text-[#0E4E3E] uppercase">
+        <p className="text-xs font-semibold tracking-[0.18em] text-brand uppercase">
           Secure checkout
         </p>
         <h1 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-balance sm:text-6xl">
           Review your pair, then continue with Shopify.
         </h1>
-        <p className="mt-5 max-w-2xl text-base leading-7 text-[#686B64]">
+        <p className="mt-5 max-w-2xl text-base leading-7 text-muted">
           A customer account is required. Shopify confirms live inventory and
           hands payment to Paystack inside its secure checkout.
         </p>
@@ -118,7 +118,7 @@ export function CheckoutClient({
 
       {(checkoutError || cartError) && (
         <p
-          className="mt-8 rounded-2xl border border-[#E0B33D]/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]"
+          className="mt-8 rounded-2xl border border-accent/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]"
           role="alert"
         >
           {checkoutError || cartError}
@@ -127,7 +127,7 @@ export function CheckoutClient({
 
       {resumeCheckout && signedIn && !checkoutError ? (
         <p
-          className="mt-8 rounded-2xl border border-[#0E4E3E]/25 bg-[#EEF7F3] p-4 text-sm leading-6 text-[#0E4E3E]"
+          className="mt-8 rounded-2xl border border-brand/25 bg-brand-tint p-4 text-sm leading-6 text-brand"
           role="status"
         >
           Sign-in complete. Review your order, then continue to secure
@@ -137,7 +137,7 @@ export function CheckoutClient({
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_25rem] lg:items-start lg:gap-14">
         <div>
-          <div className="rounded-3xl border border-[#D8D8D0] bg-white p-6 sm:p-8">
+          <div className="rounded-3xl border border-line bg-white p-6 sm:p-8">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-xl font-semibold tracking-[-0.025em]">
                 Checkout readiness
@@ -145,7 +145,7 @@ export function CheckoutClient({
               <span
                 className={`rounded-full px-3 py-1 text-xs font-semibold ${
                   canCheckout
-                    ? "bg-[#DCEDE7] text-[#0E4E3E]"
+                    ? "bg-brand-tint text-brand"
                     : "bg-[#FFF3CC] text-[#6D5711]"
                 }`}
               >
@@ -182,13 +182,13 @@ export function CheckoutClient({
             {!signedIn && customerAccountsConnected ? (
               <div className="mt-7 flex flex-wrap items-center gap-4">
                 <Link
-                  className="inline-flex rounded-xl bg-[#0E4E3E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#123F35]"
+                  className="inline-flex rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-dark"
                   href="/account/sign-up?returnTo=/checkout"
                 >
                   Create account to continue
                 </Link>
                 <Link
-                  className="text-sm font-semibold text-[#0E4E3E] underline decoration-[#E0B33D] decoration-2 underline-offset-4"
+                  className="text-sm font-semibold text-brand underline decoration-accent decoration-2 underline-offset-4"
                   href="/account/sign-in?returnTo=/checkout"
                 >
                   Sign in with email
@@ -196,7 +196,7 @@ export function CheckoutClient({
               </div>
             ) : (
               <Link
-                className="mt-7 inline-flex text-sm font-semibold text-[#0E4E3E] underline decoration-[#E0B33D] decoration-2 underline-offset-4"
+                className="mt-7 inline-flex text-sm font-semibold text-brand underline decoration-accent decoration-2 underline-offset-4"
                 href="/account"
               >
                 View customer account
@@ -204,9 +204,9 @@ export function CheckoutClient({
             )}
           </div>
 
-          <div className="mt-6 rounded-3xl bg-[#EEEAE0] p-6 sm:p-8">
+          <div className="mt-6 rounded-3xl bg-canvas p-6 sm:p-8">
             <h2 className="text-lg font-semibold">Delivery</h2>
-            <p className="mt-3 text-sm leading-6 text-[#686B64]">
+            <p className="mt-3 text-sm leading-6 text-muted">
               Delivery is fulfilled separately by Sneaker Vault GH&apos;s
               delivery partner. This storefront does not dispatch or track
               deliveries.
@@ -214,7 +214,7 @@ export function CheckoutClient({
           </div>
         </div>
 
-        <aside className="rounded-3xl bg-[#0E4E3E] p-6 text-white sm:p-7 lg:sticky lg:top-28">
+        <aside className="rounded-3xl bg-brand p-6 text-white sm:p-7 lg:sticky lg:top-28">
           <div className="flex items-center justify-between gap-4">
             <h2 className="font-semibold">Order summary</h2>
             <span className="text-xs text-white/65">
@@ -261,7 +261,7 @@ export function CheckoutClient({
           {canCheckout ? (
             <form action="/api/cart/checkout" method="post">
               <button
-                className="mt-7 w-full rounded-xl bg-[#E0B33D] px-5 py-3.5 text-sm font-semibold text-[#151713] transition hover:bg-[#E7BF56] disabled:cursor-wait disabled:opacity-70"
+                className="mt-7 w-full rounded-xl bg-accent px-5 py-3.5 text-sm font-semibold text-ink transition hover:bg-accent disabled:cursor-wait disabled:opacity-70"
                 disabled={isPending}
                 type="submit"
               >
@@ -306,21 +306,21 @@ function StatusRow({
   label: string;
 }) {
   return (
-    <li className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 rounded-2xl bg-[#F5F2EA] p-4">
+    <li className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 rounded-2xl bg-canvas p-4">
       <span
         aria-hidden="true"
         className={`mt-1 size-2.5 rounded-full ${
-          connected ? "bg-[#0E4E3E]" : "bg-[#E0B33D]"
+          connected ? "bg-brand" : "bg-accent"
         }`}
       />
       <div>
         <div className="flex flex-wrap items-center gap-2">
           <p className="text-sm font-semibold">{label}</p>
-          <span className="text-[0.68rem] font-semibold tracking-[0.08em] text-[#686B64] uppercase">
+          <span className="text-[0.68rem] font-semibold tracking-[0.08em] text-muted uppercase">
             {connected ? "Ready" : "Required"}
           </span>
         </div>
-        <p className="mt-1 text-sm leading-6 text-[#686B64]">{description}</p>
+        <p className="mt-1 text-sm leading-6 text-muted">{description}</p>
       </div>
     </li>
   );

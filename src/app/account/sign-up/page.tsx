@@ -45,16 +45,16 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
   const message = isSignUpStatus(status) ? statusMessages[status] : undefined;
 
   return (
-    <main className="bg-[#F5F2EA] text-[#151713]">
+    <main className="bg-canvas text-ink">
       <section className="mx-auto grid min-h-[calc(100svh-8rem)] w-full max-w-[90rem] gap-10 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,30rem)] lg:items-center lg:px-12 lg:py-20">
         <div className="max-w-2xl">
-          <p className="text-xs font-semibold tracking-[0.18em] text-[#0E4E3E] uppercase">
+          <p className="text-xs font-semibold tracking-[0.18em] text-brand uppercase">
             Join the vault
           </p>
           <h1 className="mt-4 text-5xl font-semibold tracking-[-0.055em] text-balance sm:text-6xl lg:text-7xl">
             Start with your details.
           </h1>
-          <p className="mt-6 max-w-xl text-base leading-7 text-[#686B64] sm:text-lg">
+          <p className="mt-6 max-w-xl text-base leading-7 text-muted sm:text-lg">
             Tell us who you are, then verify your email through Shopify&apos;s
             secure passwordless sign-in. Your cart will be waiting when you
             return.
@@ -67,10 +67,10 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
               ["03", "Access orders and checkout"],
             ].map(([number, label]) => (
               <li
-                className="rounded-2xl border border-[#D8D8D0] bg-white/60 p-4"
+                className="rounded-2xl border border-line bg-white/60 p-4"
                 key={number}
               >
-                <span className="text-xs font-semibold text-[#0E4E3E]">
+                <span className="text-xs font-semibold text-brand">
                   {number}
                 </span>
                 <span className="mt-5 block text-sm font-medium">{label}</span>
@@ -80,35 +80,35 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
 
           <div className="mt-8 flex flex-wrap items-center gap-4 text-sm">
             <Link
-              className="font-semibold text-[#0E4E3E] underline decoration-[#E0B33D] decoration-2 underline-offset-4"
+              className="font-semibold text-brand underline decoration-accent decoration-2 underline-offset-4"
               href="/shop"
             >
               Continue shopping
             </Link>
-            <span className="text-[#A2A49D]" aria-hidden="true">
+            <span className="text-muted-soft" aria-hidden="true">
               /
             </span>
-            <Link className="text-[#686B64] hover:text-[#151713]" href="/contact">
+            <Link className="text-muted hover:text-ink" href="/contact">
               Need help?
             </Link>
           </div>
         </div>
 
-        <div className="rounded-[1.5rem] border border-[#D8D8D0] bg-white p-6 shadow-[0_18px_50px_rgba(21,23,19,0.08)] sm:p-8">
-          <p className="text-xs font-semibold tracking-[0.16em] text-[#0E4E3E] uppercase">
+        <div className="rounded-[1.5rem] border border-line bg-white p-6 shadow-[0_18px_50px_rgba(12,18,48,0.08)] sm:p-8">
+          <p className="text-xs font-semibold tracking-[0.16em] text-brand uppercase">
             Create account
           </p>
           <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em]">
             Enter your customer details
           </h2>
-          <p className="mt-3 text-sm leading-6 text-[#686B64]">
+          <p className="mt-3 text-sm leading-6 text-muted">
             They are held securely until your passwordless email verification
             is complete.
           </p>
 
           {message ? (
             <p
-              className="mt-5 rounded-xl border border-[#E0B33D]/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]"
+              className="mt-5 rounded-xl border border-accent/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]"
               role="alert"
             >
               {message}
@@ -125,7 +125,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
                 </label>
                 <input
                   autoComplete="given-name"
-                  className="mt-2 w-full rounded-xl border border-[#BFC1B9] bg-white px-4 py-3 text-base text-[#151713] transition placeholder:text-[#92958D] hover:border-[#878A82] focus:border-[#0E4E3E] focus:outline-none"
+                  className="mt-2 w-full rounded-xl border border-line-strong bg-white px-4 py-3 text-base text-ink transition placeholder:text-muted-soft hover:border-muted-soft focus:border-brand focus:outline-none"
                   id="firstName"
                   maxLength={64}
                   name="firstName"
@@ -140,7 +140,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
                 </label>
                 <input
                   autoComplete="family-name"
-                  className="mt-2 w-full rounded-xl border border-[#BFC1B9] bg-white px-4 py-3 text-base text-[#151713] transition placeholder:text-[#92958D] hover:border-[#878A82] focus:border-[#0E4E3E] focus:outline-none"
+                  className="mt-2 w-full rounded-xl border border-line-strong bg-white px-4 py-3 text-base text-ink transition placeholder:text-muted-soft hover:border-muted-soft focus:border-brand focus:outline-none"
                   id="lastName"
                   maxLength={64}
                   name="lastName"
@@ -158,7 +158,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
               <input
                 autoCapitalize="none"
                 autoComplete="email"
-                className="mt-2 w-full rounded-xl border border-[#BFC1B9] bg-white px-4 py-3 text-base text-[#151713] transition placeholder:text-[#92958D] hover:border-[#878A82] focus:border-[#0E4E3E] focus:outline-none"
+                className="mt-2 w-full rounded-xl border border-line-strong bg-white px-4 py-3 text-base text-ink transition placeholder:text-muted-soft hover:border-muted-soft focus:border-brand focus:outline-none"
                 id="email"
                 inputMode="email"
                 maxLength={254}
@@ -171,23 +171,23 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
             </div>
 
             <button
-              className="mt-6 w-full rounded-xl bg-[#0E4E3E] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#123F35] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E4E3E]"
+              className="mt-6 w-full rounded-xl bg-brand px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               type="submit"
             >
               Continue to sign in
             </button>
           </form>
 
-          <p className="mt-5 text-sm leading-6 text-[#686B64]">
+          <p className="mt-5 text-sm leading-6 text-muted">
             Prefer passwordless sign-in?{" "}
             <Link
-              className="font-semibold text-[#0E4E3E] underline decoration-[#E0B33D] decoration-2 underline-offset-4"
+              className="font-semibold text-brand underline decoration-accent decoration-2 underline-offset-4"
               href={{ pathname: "/account/sign-in", query: { returnTo } }}
             >
               Sign in
             </Link>
           </p>
-          <p className="mt-4 text-xs leading-5 text-[#686B64]">
+          <p className="mt-4 text-xs leading-5 text-muted">
             By continuing, you agree to the store&apos;s privacy policy and
             terms.
           </p>

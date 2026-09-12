@@ -43,7 +43,7 @@ export function CartDrawer() {
     <dialog
       ref={dialogRef}
       aria-labelledby="cart-drawer-title"
-      className="m-0 ml-auto h-dvh max-h-none w-full max-w-[30rem] bg-white p-0 text-[#151713] shadow-2xl backdrop:bg-[#151713]/55"
+      className="m-0 ml-auto h-dvh max-h-none w-full max-w-[30rem] bg-white p-0 text-ink shadow-2xl backdrop:bg-ink/55"
       onCancel={(event) => {
         event.preventDefault();
         closeCart();
@@ -56,9 +56,9 @@ export function CartDrawer() {
       }}
     >
       <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between border-b border-[#D8D8D0] px-5 py-5 sm:px-7">
+        <div className="flex items-center justify-between border-b border-line px-5 py-5 sm:px-7">
           <div>
-            <p className="text-[0.68rem] font-semibold tracking-[0.22em] text-[#686B64] uppercase">
+            <p className="text-[0.68rem] font-semibold tracking-[0.22em] text-muted uppercase">
               Your selection
             </p>
             <h2
@@ -70,7 +70,7 @@ export function CartDrawer() {
           </div>
           <button
             type="button"
-            className="rounded-full border border-[#D8D8D0] px-4 py-2 text-xs font-semibold tracking-[0.12em] uppercase transition-colors hover:border-[#151713] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E4E3E]"
+            className="rounded-full border border-line px-4 py-2 text-xs font-semibold tracking-[0.12em] uppercase transition-colors hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             onClick={closeCart}
           >
             Close
@@ -82,14 +82,14 @@ export function CartDrawer() {
             <p className="max-w-xs text-3xl font-semibold tracking-[-0.045em]">
               Your next pair is still out there.
             </p>
-            <p className="mt-3 max-w-sm text-sm leading-6 text-[#686B64]">
+            <p className="mt-3 max-w-sm text-sm leading-6 text-muted">
               Explore the collection and choose an available EU size to start
               your bag.
             </p>
             <Link
               href="/shop"
               onClick={closeCart}
-              className="mt-7 rounded-xl bg-[#0E4E3E] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#0A3E31] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E4E3E]"
+              className="mt-7 rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             >
               Shop sneakers
             </Link>
@@ -98,7 +98,7 @@ export function CartDrawer() {
           <>
             {cartError ? (
               <p
-                className="mx-5 mt-5 rounded-xl border border-[#E0B33D]/50 bg-[#FFF9E8] p-3 text-xs leading-5 text-[#584814] sm:mx-7"
+                className="mx-5 mt-5 rounded-xl border border-accent/50 bg-[#FFF9E8] p-3 text-xs leading-5 text-[#584814] sm:mx-7"
                 role="alert"
               >
                 {cartError}
@@ -108,12 +108,12 @@ export function CartDrawer() {
               {lines.map((line) => (
                 <li
                   key={line.lineId}
-                  className="grid grid-cols-[6.5rem_1fr] gap-4 border-b border-[#D8D8D0] pb-5"
+                  className="grid grid-cols-[6.5rem_1fr] gap-4 border-b border-line pb-5"
                 >
                   <Link
                     href={`/products/${line.product.handle}`}
                     onClick={closeCart}
-                    className="relative aspect-square overflow-hidden rounded-2xl bg-[#F5F2EA]"
+                    className="relative aspect-square overflow-hidden rounded-2xl bg-canvas"
                   >
                     <Image
                       src={line.product.images[0].src}
@@ -126,7 +126,7 @@ export function CartDrawer() {
                   <div className="min-w-0">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-[0.65rem] font-semibold tracking-[0.14em] text-[#686B64] uppercase">
+                        <p className="text-[0.65rem] font-semibold tracking-[0.14em] text-muted uppercase">
                           {line.product.brand}
                         </p>
                         <Link
@@ -136,7 +136,7 @@ export function CartDrawer() {
                         >
                           {line.product.title}
                         </Link>
-                        <p className="mt-1 text-xs text-[#686B64]">
+                        <p className="mt-1 text-xs text-muted">
                           {line.variant.sizeLabel}
                         </p>
                       </div>
@@ -147,13 +147,13 @@ export function CartDrawer() {
 
                     <div className="mt-4 flex items-center justify-between">
                       <div
-                        className="inline-flex items-center rounded-lg border border-[#D8D8D0]"
+                        className="inline-flex items-center rounded-lg border border-line"
                         aria-label={`Quantity for ${line.product.title}, ${line.variant.sizeLabel}`}
                       >
                         <button
                           type="button"
                           aria-label={`Decrease ${line.product.title} quantity`}
-                          className="h-9 w-9 text-lg transition-colors hover:bg-[#F5F2EA] disabled:cursor-not-allowed disabled:opacity-40"
+                          className="h-9 w-9 text-lg transition-colors hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-40"
                           disabled={isPending || line.quantity <= 1}
                           onClick={() =>
                             updateQuantity(line.variantId, line.quantity - 1)
@@ -170,7 +170,7 @@ export function CartDrawer() {
                         <button
                           type="button"
                           aria-label={`Increase ${line.product.title} quantity`}
-                          className="h-9 w-9 text-lg transition-colors hover:bg-[#F5F2EA] disabled:cursor-not-allowed disabled:opacity-40"
+                          className="h-9 w-9 text-lg transition-colors hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-40"
                           disabled={
                             line.quantity >=
                               Math.min(line.variant.inventoryQuantity, 10) ||
@@ -185,7 +185,7 @@ export function CartDrawer() {
                       </div>
                       <button
                         type="button"
-                        className="text-xs font-semibold text-[#686B64] underline decoration-[#D8D8D0] underline-offset-4 hover:text-[#151713]"
+                        className="text-xs font-semibold text-muted underline decoration-line underline-offset-4 hover:text-ink"
                         disabled={isPending}
                         onClick={() => removeItem(line.variantId)}
                       >
@@ -197,9 +197,9 @@ export function CartDrawer() {
               ))}
             </ul>
 
-            <div className="border-t border-[#D8D8D0] bg-[#F5F2EA] px-5 py-5 sm:px-7">
+            <div className="border-t border-line bg-canvas px-5 py-5 sm:px-7">
               <div className="flex items-end justify-between">
-                <p className="text-[0.68rem] font-semibold tracking-[0.18em] text-[#686B64] uppercase">
+                <p className="text-[0.68rem] font-semibold tracking-[0.18em] text-muted uppercase">
                   Subtotal
                 </p>
                 <p className="text-xl font-semibold tracking-[-0.03em]">
@@ -209,11 +209,11 @@ export function CartDrawer() {
               <Link
                 href="/cart"
                 onClick={closeCart}
-                className="mt-5 flex w-full items-center justify-center rounded-xl bg-[#0E4E3E] px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#0A3E31] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E4E3E]"
+                className="mt-5 flex w-full items-center justify-center rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
                 Review bag
               </Link>
-              <p className="mt-3 text-center text-[0.68rem] leading-5 text-[#686B64]">
+              <p className="mt-3 text-center text-[0.68rem] leading-5 text-muted">
                 {mode === "shopify"
                   ? "Live inventory is confirmed again at Shopify checkout."
                   : "Preview bag only. Demo products cannot be purchased."}

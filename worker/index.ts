@@ -6,6 +6,8 @@ import {
 import handler from "vinext/server/app-router-entry";
 
 interface WorkerEnv {
+  /** Optional KV namespace for customer reviews (see README). */
+  REVIEWS_KV?: unknown;
   ASSETS: {
     fetch(request: Request): Promise<Response>;
   };
@@ -33,6 +35,9 @@ const worker = {
     context: WorkerExecutionContext,
   ): Promise<Response> {
     const url = new URL(request.url);
+
+    // Expose bindings to server modules that cannot receive `env` directly.
+    (globalThis as { __SVGH_BINDINGS?: WorkerEnv }).__SVGH_BINDINGS = env;
 
     if (url.pathname === "/_vinext/image") {
       const allowedWidths = [

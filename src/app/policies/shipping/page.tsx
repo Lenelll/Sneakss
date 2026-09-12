@@ -47,44 +47,44 @@ const sections = [
 
 export default function ShippingPolicyPage() {
   return (
-    <main className="min-h-screen bg-[#f4f3ef] text-neutral-950">
+    <main className="min-h-screen bg-canvas text-ink">
       <article className="mx-auto w-full max-w-5xl px-5 py-14 sm:px-8 sm:py-20 lg:px-12 lg:py-28">
-        <header className="border-b border-neutral-300 pb-10 sm:pb-14">
-          <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-neutral-500">
+        <header className="border-b border-line pb-10 sm:pb-14">
+          <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-muted">
             Customer care
           </p>
           <h1 className="text-5xl font-medium leading-none tracking-[-0.05em] sm:text-6xl">
             Shipping policy
           </h1>
-          <p className="mt-5 text-sm text-neutral-500">
+          <p className="mt-5 text-sm text-muted">
             Effective date: [To be confirmed]
           </p>
         </header>
 
         <aside
           aria-label="Draft policy notice"
-          className="my-8 border-l-4 border-amber-400 bg-white px-5 py-4 text-sm leading-6 text-neutral-700 sm:px-6"
+          className="my-8 border-l-4 border-accent bg-white px-5 py-4 text-sm leading-6 text-muted sm:px-6"
         >
-          <span className="font-semibold text-neutral-950">Draft content.</span>{" "}
+          <span className="font-semibold text-ink">Draft content.</span>{" "}
           This policy contains operational placeholders and is not ready for
           publication. The client and delivery partner must approve delivery
           areas, charges, timelines, and procedures before launch.
         </aside>
 
-        <div className="divide-y divide-neutral-300 border-t border-neutral-300">
+        <div className="divide-y divide-line border-t border-line">
           {sections.map((section, index) => (
             <section
               key={section.title}
               className="grid gap-5 py-9 sm:grid-cols-[3rem_1fr] sm:gap-7"
             >
-              <span className="font-mono text-xs text-neutral-400">
+              <span className="font-mono text-xs text-muted-soft">
                 {String(index + 1).padStart(2, "0")}
               </span>
               <div>
                 <h2 className="mb-4 text-2xl font-medium tracking-[-0.03em]">
                   {section.title}
                 </h2>
-                <div className="max-w-2xl space-y-3 text-base leading-7 text-neutral-700">
+                <div className="max-w-2xl space-y-3 text-base leading-7 text-muted">
                   {section.body.map((paragraph) => (
                     <p key={paragraph}>{paragraph}</p>
                   ))}
@@ -94,11 +94,11 @@ export default function ShippingPolicyPage() {
           ))}
         </div>
 
-        <footer className="mt-8 border-t border-neutral-300 pt-8 text-sm leading-6 text-neutral-600">
+        <footer className="mt-8 border-t border-line pt-8 text-sm leading-6 text-muted">
           Questions about delivery? Visit the{" "}
           <Link
             href="/contact"
-            className="font-semibold text-neutral-950 underline underline-offset-4"
+            className="font-semibold text-ink underline underline-offset-4"
           >
             contact page
           </Link>

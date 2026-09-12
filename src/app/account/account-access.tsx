@@ -30,17 +30,17 @@ export function AccountAccess({
     prefsStatus === "unchanged" || prefsStatus === "empty";
 
   return (
-    <div className="rounded-[1.5rem] border border-[#D8D8D0] bg-white p-6 shadow-[0_18px_50px_rgba(21,23,19,0.08)] sm:p-8">
-      <p className="text-xs font-semibold tracking-[0.16em] text-[#0E4E3E] uppercase">
+    <div className="rounded-[1.5rem] border border-line bg-white p-6 shadow-[0_18px_50px_rgba(12,18,48,0.08)] sm:p-8">
+      <p className="text-xs font-semibold tracking-[0.16em] text-brand uppercase">
         Account access
       </p>
 
       {signedIn ? (
         <>
-          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#151713]">
+          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-ink">
             Welcome{customerName ? `, ${customerName}` : " back"}.
           </h2>
-          <p className="mt-3 text-sm leading-6 text-[#686B64]">
+          <p className="mt-3 text-sm leading-6 text-muted">
             You are signed in with Shopify Customer Accounts
             {customerEmail ? ` as ${customerEmail}` : ""}. Your account will
             stay connected when you continue to secure checkout.
@@ -50,10 +50,10 @@ export function AccountAccess({
             <p
               className={`mt-5 rounded-xl border p-4 text-sm leading-6 ${
                 preferencesSaved
-                  ? "border-[#0E4E3E]/25 bg-[#EEF7F3] text-[#0E4E3E]"
+                  ? "border-brand/25 bg-brand-tint text-brand"
                   : preferencesError
-                    ? "border-[#E0B33D]/50 bg-[#FFF9E8] text-[#584814]"
-                    : "border-[#D8D8D0] bg-[#F5F2EA] text-[#4F514D]"
+                    ? "border-accent/50 bg-[#FFF9E8] text-[#584814]"
+                    : "border-line bg-canvas text-muted"
               }`}
               role={preferencesError ? "alert" : "status"}
             >
@@ -67,11 +67,11 @@ export function AccountAccess({
             </p>
           )}
 
-          <section className="mt-7 rounded-xl border border-[#D8D8D0] bg-[#F5F2EA] p-4">
-            <p className="text-sm font-semibold text-[#151713]">
+          <section className="mt-7 rounded-xl border border-line bg-canvas p-4">
+            <p className="text-sm font-semibold text-ink">
               Account preferences
             </p>
-            <p className="mt-2 text-sm leading-6 text-[#686B64]">
+            <p className="mt-2 text-sm leading-6 text-muted">
               Update your saved first and last name used for account and checkout
               displays.
             </p>
@@ -85,14 +85,14 @@ export function AccountAccess({
 
               <div>
                 <label
-                  className="text-sm font-semibold text-[#151713]"
+                  className="text-sm font-semibold text-ink"
                   htmlFor="firstName"
                 >
                   First name
                 </label>
                 <input
                   autoComplete="given-name"
-                  className="mt-2 w-full rounded-xl border border-[#BFC1B9] bg-white px-4 py-3 text-base text-[#151713] transition placeholder:text-[#92958D] hover:border-[#878A82] focus:border-[#0E4E3E] focus:outline-none"
+                  className="mt-2 w-full rounded-xl border border-line-strong bg-white px-4 py-3 text-base text-ink transition placeholder:text-muted-soft hover:border-muted-soft focus:border-brand focus:outline-none"
                   defaultValue={customerFirstName ?? ""}
                   id="firstName"
                   maxLength={64}
@@ -104,14 +104,14 @@ export function AccountAccess({
 
               <div>
                 <label
-                  className="text-sm font-semibold text-[#151713]"
+                  className="text-sm font-semibold text-ink"
                   htmlFor="lastName"
                 >
                   Last name
                 </label>
                 <input
                   autoComplete="family-name"
-                  className="mt-2 w-full rounded-xl border border-[#BFC1B9] bg-white px-4 py-3 text-base text-[#151713] transition placeholder:text-[#92958D] hover:border-[#878A82] focus:border-[#0E4E3E] focus:outline-none"
+                  className="mt-2 w-full rounded-xl border border-line-strong bg-white px-4 py-3 text-base text-ink transition placeholder:text-muted-soft hover:border-muted-soft focus:border-brand focus:outline-none"
                   defaultValue={customerLastName ?? ""}
                   id="lastName"
                   maxLength={64}
@@ -122,7 +122,7 @@ export function AccountAccess({
               </div>
 
               <button
-                className="rounded-xl bg-[#0E4E3E] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#123F35]"
+                className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-dark"
                 type="submit"
               >
                 Save account preferences
@@ -131,14 +131,14 @@ export function AccountAccess({
           </section>
 
           <Link
-            className="mt-7 flex w-full items-center justify-center rounded-xl bg-[#0E4E3E] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#123F35]"
+            className="mt-7 flex w-full items-center justify-center rounded-xl bg-brand px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
             href="/shop"
           >
             Continue shopping
           </Link>
           <form action="/account/auth/logout" className="mt-5" method="post">
             <button
-              className="w-full rounded-xl border border-[#BFC1B9] px-5 py-3 text-sm font-semibold text-[#151713] transition hover:border-[#151713]"
+              className="w-full rounded-xl border border-line-strong px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink"
               type="submit"
             >
               Sign out
@@ -147,17 +147,17 @@ export function AccountAccess({
         </>
       ) : (
         <>
-          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#151713]">
+          <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-ink">
             Create or access your account
           </h2>
-          <p className="mt-3 text-sm leading-6 text-[#686B64]">
+          <p className="mt-3 text-sm leading-6 text-muted">
             New customers start with their name and email. Returning customers
             sign in with a secure six-digit email code—no password required.
           </p>
 
           {authError ? (
             <p
-              className="mt-5 rounded-xl border border-[#E0B33D]/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]"
+              className="mt-5 rounded-xl border border-accent/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]"
               role="alert"
             >
               Sign-in could not be completed. Please try again.
@@ -172,20 +172,20 @@ export function AccountAccess({
           {configured ? (
             <div className="mt-7 grid gap-3">
               <Link
-                className="flex w-full items-center justify-center rounded-xl bg-[#0E4E3E] px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-[#123F35] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0E4E3E]"
+                className="flex w-full items-center justify-center rounded-xl bg-brand px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                 href="/account/sign-up?returnTo=/"
               >
                 Create account
               </Link>
               <Link
-                className="flex w-full items-center justify-center rounded-xl border border-[#BFC1B9] px-5 py-3 text-sm font-semibold text-[#151713] transition hover:border-[#151713]"
+                className="flex w-full items-center justify-center rounded-xl border border-line-strong px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink"
                 href="/account/sign-in?returnTo=/"
               >
                 Sign in
               </Link>
             </div>
           ) : (
-            <div className="mt-7 rounded-xl border border-[#E0B33D]/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]">
+            <div className="mt-7 rounded-xl border border-accent/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]">
               Customer sign-in is waiting for the Shopify Customer Account
               client, callback URL, and session secret.
             </div>
@@ -193,7 +193,7 @@ export function AccountAccess({
         </>
       )}
 
-      <p className="mt-5 text-xs leading-5 text-[#686B64]">
+      <p className="mt-5 text-xs leading-5 text-muted">
         By continuing, customers agree to the store&apos;s privacy policy and
         terms.
       </p>

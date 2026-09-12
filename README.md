@@ -156,6 +156,30 @@ SESSION_SECRET
 `SHOPIFY_WEBHOOK_SECRET` is optional until webhook-driven cache invalidation is
 added. No Paystack environment variable belongs in this project.
 
+## Customer reviews
+
+Product pages accept customer reviews with a star rating, headline, review
+text, display name, optional fit feedback, optional EU size and up to three
+optional photos. Photos are resized to JPEG in the browser before upload and
+validated by magic bytes on the server. Reviews posted while signed in to a
+Shopify customer account are labelled "Verified account". Ratings appear on
+product cards, in the product page header, in Product JSON-LD for search
+engines, and the newest photo reviews are highlighted on the home page.
+
+Reviews and photos live in a small key/value store chosen at runtime
+(`src/lib/reviews/kv.ts`):
+
+| Host                     | Configure                                                                 |
+| ------------------------ | ------------------------------------------------------------------------- |
+| Vercel / any Node host   | `REVIEWS_REDIS_REST_URL` + `REVIEWS_REDIS_REST_TOKEN` (Upstash-compatible; Vercel KV's `KV_REST_API_*` also works) |
+| Cloudflare Workers       | `npx wrangler kv namespace create REVIEWS_KV`, then build with `REVIEWS_KV_ID=<id>` so the `REVIEWS_KV` binding is emitted |
+| Local development        | Nothing. Reviews are written to `./.data/reviews` (gitignored).            |
+
+Without any of these in production the store falls back to process memory
+and logs a warning, so configure one before launch. There is no moderation
+queue yet: reviews publish immediately, with a honeypot field, a per-visitor
+cooldown and one review per product per visitor as basic abuse controls.
+
 ## Paystack launch check
 
 The configured Paystack test account is exercised only through Shopify

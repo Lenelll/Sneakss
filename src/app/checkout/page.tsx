@@ -71,7 +71,7 @@ export default async function CheckoutPage({
     sessionState.status === "valid" ? sessionState.session : null;
 
   return (
-    <main className="min-h-[70svh] bg-[#F5F2EA] text-[#151713]">
+    <main className="min-h-[70svh] bg-canvas text-ink">
       <CheckoutClient
         customerAccountsConnected={readiness.customerAccountsConnected}
         checkoutError={

@@ -3,20 +3,25 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ProductCard } from "@/components/product-card";
-import {
-  getRelatedProducts,
-  products,
-} from "@/lib";
+import { ProductReviews } from "@/components/product-reviews";
+import { getRelatedProducts, products } from "@/lib";
 import {
   getCommerceCatalog,
   getCommerceProduct,
 } from "@/lib/catalog-source";
+import {
+  getProductReviews,
+  getReviewSummaries,
+} from "@/lib/reviews/store";
+import { getCustomerSessionState } from "@/lib/shopify/customer-auth";
 
 import { ProductDetail } from "./product-detail";
 
 type ProductPageProps = {
   params: Promise<{ handle: string }>;
 };
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export function generateStaticParams() {
   return products.map((product) => ({ handle: product.handle }));
@@ -60,32 +65,118 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  const catalog = await getCommerceCatalog();
+  const [catalog, reviewData, sessionState] = await Promise.all([
+    getCommerceCatalog(),
+    getProductReviews(product.handle),
+    getCustomerSessionState(),
+  ]);
   const relatedProducts = getRelatedProducts(product, 3, catalog.products);
+  const relatedRatings = await getReviewSummaries(
+    relatedProducts.map((related) => related.handle),
+  );
+  const availableVariants = product.variants.filter(
+    (variant) => variant.availableForSale,
+  );
+  const inStock = availableVariants.length > 0;
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    brand: { "@type": "Brand", name: product.brand },
+    description: product.description,
+    image: product.images.map((image) => new URL(image.src, siteUrl).href),
+    sku: product.variants[0]?.sku,
+    color: product.colorway,
+    category: product.category,
+    offers: {
+      "@type": "AggregateOffer",
+      priceCurrency: "GHS",
+      lowPrice: Math.min(...product.variants.map((variant) => variant.price)),
+      highPrice: Math.max(...product.variants.map((variant) => variant.price)),
+      offerCount: availableVariants.length,
+      availability: inStock
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+      url: new URL(`/products/${product.handle}`, siteUrl).href,
+    },
+    ...(reviewData.summary.count > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: reviewData.summary.average,
+            reviewCount: reviewData.summary.count,
+            bestRating: 5,
+            worstRating: 1,
+          },
+          review: reviewData.reviews.slice(0, 10).map((review) => ({
+            "@type": "Review",
+            name: review.title,
+            reviewBody: review.body,
+            datePublished: review.createdAt,
+            author: { "@type": "Person", name: review.authorName },
+            reviewRating: {
+              "@type": "Rating",
+              ratingValue: review.rating,
+              bestRating: 5,
+              worstRating: 1,
+            },
+          })),
+        }
+      : {}),
+  };
 
   return (
-    <main className="min-h-screen bg-[#F5F2EA] text-[#151713]">
+    <main className="min-h-screen bg-canvas text-ink">
+      <script
+        type="application/ld+json"
+        // JSON.stringify output is escaped so it cannot close the tag.
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
+        }}
+      />
+
       <div className="mx-auto max-w-[1440px] px-5 py-5 sm:px-8 lg:px-12">
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-semibold text-[#686B64]">
-          <Link
-            href="/shop"
-            className="underline decoration-[#A5A89F] underline-offset-4 hover:text-[#0E4E3E]"
-          >
+        <nav
+          aria-label="Breadcrumb"
+          className="flex items-center gap-2 text-xs font-semibold text-muted"
+        >
+          <Link href="/" className="hover:text-brand">
+            Home
+          </Link>
+          <span aria-hidden="true">/</span>
+          <Link href="/shop" className="hover:text-brand">
             Shop
           </Link>
           <span aria-hidden="true">/</span>
-          <span className="truncate text-[#151713]">{product.title}</span>
+          <Link
+            href={`/shop?category=${encodeURIComponent(product.category)}`}
+            className="hover:text-brand"
+          >
+            {product.category}
+          </Link>
+          <span aria-hidden="true">/</span>
+          <span className="truncate text-ink">{product.title}</span>
         </nav>
       </div>
 
-      <ProductDetail product={product} />
+      <ProductDetail product={product} reviewSummary={reviewData.summary} />
+
+      <ProductReviews
+        productHandle={product.handle}
+        productTitle={product.title}
+        sizes={product.variants.map((variant) => variant.size)}
+        initialReviews={reviewData.reviews}
+        initialSummary={reviewData.summary}
+        isSignedIn={sessionState.status === "valid"}
+      />
 
       {relatedProducts.length > 0 ? (
-        <section className="border-t border-[#D8D8D0] px-5 py-14 sm:px-8 sm:py-20 lg:px-12">
+        <section className="border-t border-line bg-surface px-5 py-14 sm:px-8 sm:py-20 lg:px-12">
           <div className="mx-auto max-w-[1440px]">
             <div className="mb-8 flex items-end justify-between gap-5">
               <div>
-                <p className="text-xs font-bold tracking-[0.16em] text-[#0E4E3E] uppercase">
+                <p className="text-xs font-bold tracking-[0.16em] text-brand uppercase">
                   Keep exploring
                 </p>
                 <h2 className="mt-2 text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">
@@ -94,7 +185,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </div>
               <Link
                 href="/shop"
-                className="hidden text-sm font-bold text-[#0E4E3E] underline decoration-1 underline-offset-4 sm:block"
+                className="hidden text-sm font-bold text-brand underline decoration-1 underline-offset-4 sm:block"
               >
                 View all styles
               </Link>
@@ -104,6 +195,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 <ProductCard
                   key={relatedProduct.id}
                   product={relatedProduct}
+                  rating={relatedRatings[relatedProduct.handle]}
                 />
               ))}
             </div>

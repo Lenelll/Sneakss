@@ -10,7 +10,6 @@ import { useStore } from "./store-provider";
 
 const navItems = [
   { href: "/shop", label: "Shop" },
-  { href: "/shop?sort=newest", label: "New arrivals" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ] as const;

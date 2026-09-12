@@ -321,7 +321,7 @@ export default async function HomePage() {
             View all new arrivals
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-5 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-2 gap-y-7 sm:gap-x-3 lg:grid-cols-4">
           {newArrivals.map((product, index) => (
             <ProductCard
               key={product.id}
@@ -480,7 +480,7 @@ export default async function HomePage() {
             Shop the full catalogue
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-5 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-x-2 gap-y-7 sm:gap-x-3 lg:grid-cols-4">
           {featuredProducts.map((product) => (
             <ProductCard
               key={product.id}

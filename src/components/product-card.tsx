@@ -36,7 +36,7 @@ export function ProductCard({
     <article className={`group min-w-0 ${className}`}>
       <Link
         href={`/products/${product.handle}`}
-        className="relative block aspect-[4/4.65] overflow-hidden rounded-[1.25rem] border border-line bg-surface-2 transition-shadow duration-300 group-hover:shadow-[0_24px_50px_-28px_rgba(39,80,214,0.45)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+        className="relative block aspect-[4/4.65] overflow-hidden rounded-lg border border-line bg-surface-2 transition-shadow duration-300 group-hover:shadow-[0_24px_50px_-28px_rgba(39,80,214,0.45)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
       >
         <Image
           src={product.images[0].src}

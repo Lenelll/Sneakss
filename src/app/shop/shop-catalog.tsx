@@ -256,7 +256,7 @@ export function ShopCatalog({
             </div>
 
             {filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-2 gap-x-3 gap-y-9 sm:gap-x-5 sm:gap-y-12 xl:grid-cols-3">
+              <div className="grid grid-cols-2 gap-x-2 gap-y-7 sm:gap-x-3 sm:gap-y-9 xl:grid-cols-3">
                 {filteredProducts.map((product) => (
                   <ProductCard
                     key={product.id}

@@ -111,7 +111,7 @@ export function ProductDetail({
         <ProductGallery
           images={product.images}
           badge={
-            product.isDemo ? "Demo product" : product.isNewArrival ? "New" : undefined
+            product.isDemo ? "Demo product" : undefined
           }
         />
 

@@ -4,7 +4,6 @@ import { BrandLogo } from "./brand-logo";
 
 const shopLinks = [
   { href: "/shop", label: "All sneakers" },
-  { href: "/shop?sort=newest", label: "New arrivals" },
   { href: "/shop?q=Lifestyle", label: "Lifestyle" },
   { href: "/shop?q=Running", label: "Running" },
 ] as const;

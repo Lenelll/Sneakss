@@ -55,11 +55,6 @@ export function ProductCard({
             <span aria-hidden="true" />
           )}
           <span className="flex flex-col items-end gap-1.5">
-            {product.isNewArrival ? (
-              <span className="rounded-full bg-accent px-3 py-1.5 text-[0.6rem] font-bold tracking-[0.14em] text-ink uppercase">
-                New
-              </span>
-            ) : null}
             {isSoldOut ? (
               <span className="rounded-full bg-ink px-3 py-1.5 text-[0.6rem] font-bold tracking-[0.14em] text-white uppercase">
                 Sold out

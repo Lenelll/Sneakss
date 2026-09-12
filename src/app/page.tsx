@@ -8,7 +8,6 @@ import {
   PRODUCT_CATEGORIES,
   formatGHS,
   getFeaturedProducts,
-  getNewArrivals,
   type Product,
 } from "@/lib";
 import { getCommerceCatalog } from "@/lib/catalog-source";
@@ -46,27 +45,16 @@ const valueProps = [
   },
 ];
 
-function newestFirst(products: readonly Product[]) {
-  return [...products].sort(
-    (a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt),
-  );
-}
-
 export default async function HomePage() {
   const catalog = await getCommerceCatalog();
   const activeProducts = catalog.products.filter(
     (product) => product.status === "active",
   );
   const taggedFeatured = getFeaturedProducts(4, catalog.products);
-  const taggedNewArrivals = getNewArrivals(4, catalog.products);
   const featuredProducts =
     taggedFeatured.length > 0 ? taggedFeatured : activeProducts.slice(0, 4);
-  const newArrivals =
-    taggedNewArrivals.length > 0
-      ? taggedNewArrivals
-      : newestFirst(activeProducts).slice(0, 4);
   const heroProduct =
-    newArrivals[0] ?? featuredProducts[0] ?? activeProducts[0] ?? null;
+    featuredProducts[0] ?? activeProducts[0] ?? null;
   const heroImage =
     heroProduct?.images[0] ?? {
       id: "hero-fallback",
@@ -81,7 +69,7 @@ export default async function HomePage() {
 
   const shownHandles = Array.from(
     new Set(
-      [...newArrivals, ...featuredProducts, heroProduct]
+      [...featuredProducts, heroProduct]
         .filter((product): product is Product => product !== null)
         .map((product) => product.handle),
     ),
@@ -137,10 +125,10 @@ export default async function HomePage() {
                   Shop all pairs
                 </Link>
                 <Link
-                  href="#new-arrivals"
+                  href="#categories"
                   className="inline-flex min-h-13 items-center justify-center rounded-xl border border-white/35 px-7 text-sm font-bold tracking-[0.13em] uppercase transition-colors hover:border-white hover:bg-white hover:text-brand-deep"
                 >
-                  New arrivals
+                  Browse categories
                 </Link>
               </div>
             </div>
@@ -179,11 +167,6 @@ export default async function HomePage() {
                   sizes="(min-width: 1024px) 44vw, 100vw"
                   className="object-cover"
                 />
-                {heroProduct?.isNewArrival ? (
-                  <span className="absolute top-5 left-5 rounded-full bg-accent px-3 py-1.5 text-[0.65rem] font-bold tracking-[0.14em] text-ink uppercase">
-                    Just landed
-                  </span>
-                ) : null}
                 {heroRating ? (
                   <span className="absolute top-5 right-5 flex items-center gap-2 rounded-full bg-white/92 px-3 py-1.5 text-xs font-semibold text-ink backdrop-blur">
                     <RatingStars value={heroRating.average} size="sm" />
@@ -249,7 +232,7 @@ export default async function HomePage() {
       </div>
 
       {/* Categories + sizes */}
-      <section className="page-shell py-14 sm:py-20">
+      <section id="categories" className="page-shell scroll-mt-24 py-14 sm:py-20">
         <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
           <div>
             <p className="eyebrow text-brand">Browse by category</p>
@@ -304,32 +287,6 @@ export default async function HomePage() {
               Half sizes and EU 36–47 available on the shop page.
             </p>
           </div>
-        </div>
-      </section>
-
-      {/* New arrivals */}
-      <section id="new-arrivals" className="page-shell scroll-mt-24 pb-20 sm:pb-28">
-        <div className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="eyebrow text-brand">Just landed</p>
-            <h2 className="section-title mt-3">New in the vault.</h2>
-          </div>
-          <Link
-            href="/shop?sort=newest"
-            className="w-fit border-b border-ink pb-1 text-sm font-semibold hover:border-brand hover:text-brand"
-          >
-            View all new arrivals
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-x-2 gap-y-7 sm:gap-x-3 lg:grid-cols-4">
-          {newArrivals.map((product, index) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              rating={ratings[product.handle]}
-              priority={index < 2}
-            />
-          ))}
         </div>
       </section>
 

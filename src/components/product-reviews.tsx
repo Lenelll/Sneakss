@@ -12,7 +12,6 @@ import {
   type FormEvent,
 } from "react";
 
-import type { EuSize } from "@/lib";
 import {
   REVIEW_FIT_LABELS,
   REVIEW_FITS,
@@ -41,38 +40,60 @@ type LightboxItem = {
   readonly author: string;
 };
 
+export type ReviewerInfo = {
+  readonly displayName: string;
+};
+
+function mergeReviews(
+  serverReviews: readonly ProductReview[],
+  localReviews: readonly ProductReview[],
+): ProductReview[] {
+  const seen = new Set(serverReviews.map((review) => review.id));
+  const missing = localReviews.filter((review) => !seen.has(review.id));
+  return [...missing, ...serverReviews];
+}
+
 export function ProductReviews({
   productHandle,
   productTitle,
-  sizes,
   initialReviews,
   initialSummary,
-  isSignedIn,
+  reviewer,
+  signInHref,
+  storageWarning = false,
 }: {
   productHandle: string;
   productTitle: string;
-  sizes: readonly EuSize[];
   initialReviews: readonly ProductReview[];
   initialSummary: ReviewSummary;
-  isSignedIn: boolean;
+  /** Signed-in customer, or null when signed out. */
+  reviewer: ReviewerInfo | null;
+  signInHref: string;
+  /** True when the server has no durable review store configured. */
+  storageWarning?: boolean;
 }) {
-  const [reviews, setReviews] = useState<readonly ProductReview[]>(
-    initialReviews,
+  // Reviews created in this session. They are kept even if a server refresh
+  // has not caught up yet, so a freshly posted review never disappears.
+  const [localReviews, setLocalReviews] = useState<readonly ProductReview[]>(
+    [],
   );
-  const [summary, setSummary] = useState<ReviewSummary>(initialSummary);
   const [photosOnly, setPhotosOnly] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [lightbox, setLightbox] = useState<LightboxItem[] | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const formRef = useRef<HTMLDivElement>(null);
-  // Adopt fresh server data (after router.refresh) without an effect.
-  const [seenInitialReviews, setSeenInitialReviews] = useState(initialReviews);
 
-  if (seenInitialReviews !== initialReviews) {
-    setSeenInitialReviews(initialReviews);
-    setReviews(initialReviews);
-    setSummary(initialSummary);
-  }
+  const reviews = useMemo(
+    () => mergeReviews(initialReviews, localReviews),
+    [initialReviews, localReviews],
+  );
+  const summary = useMemo(
+    () =>
+      reviews.length === initialReviews.length
+        ? initialSummary
+        : summarizeReviews(reviews),
+    [initialReviews.length, initialSummary, reviews],
+  );
 
   const allPhotos = useMemo<LightboxItem[]>(
     () =>
@@ -103,9 +124,7 @@ export function ProductReviews({
   }
 
   function handleCreated(review: ProductReview) {
-    const next = [review, ...reviews];
-    setReviews(next);
-    setSummary(summarizeReviews(next));
+    setLocalReviews((current) => [review, ...current]);
     setIsFormOpen(false);
   }
 
@@ -200,38 +219,54 @@ export function ProductReviews({
             )}
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={openForm}
-                className="inline-flex min-h-12 items-center justify-center rounded-xl bg-brand px-6 text-sm font-bold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
-              >
-                Write a review
-              </button>
-              {isSignedIn ? (
-                <span className="inline-flex items-center gap-2 rounded-full bg-accent-tint px-3 py-1.5 text-xs font-semibold text-accent-dark">
-                  <CheckIcon />
-                  Your review will show as verified
-                </span>
+              {reviewer ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={openForm}
+                    className="inline-flex min-h-12 items-center justify-center rounded-xl bg-brand px-6 text-sm font-bold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+                  >
+                    Write a review
+                  </button>
+                  <span className="inline-flex items-center gap-2 rounded-full bg-accent-tint px-3 py-1.5 text-xs font-semibold text-accent-dark">
+                    <CheckIcon />
+                    Posting as {reviewer.displayName}
+                  </span>
+                </>
               ) : (
-                <Link
-                  href={`/account/sign-in?returnTo=${encodeURIComponent(
-                    `/products/${productHandle}#reviews`,
-                  )}`}
-                  className="text-xs font-semibold text-muted underline decoration-line-strong underline-offset-4 hover:text-ink"
-                >
-                  Sign in to post a verified review
-                </Link>
+                <>
+                  <Link
+                    href={signInHref}
+                    className="inline-flex min-h-12 items-center justify-center rounded-xl bg-brand px-6 text-sm font-bold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+                  >
+                    Sign in to write a review
+                  </Link>
+                  <span className="text-xs text-muted">
+                    Reviews are posted under your account name.
+                  </span>
+                </>
               )}
             </div>
+
+            {storageWarning ? (
+              <p
+                role="status"
+                className="mt-5 rounded-xl border border-accent/50 bg-[#FFF9E8] p-4 text-xs leading-5 text-[#584814]"
+              >
+                Review storage is not configured on this deployment yet, so
+                reviews posted now will not be kept. Set the review store
+                environment variables and redeploy.
+              </p>
+            ) : null}
           </div>
 
           {/* Reviews column */}
           <div>
-            {isFormOpen ? (
+            {isFormOpen && reviewer ? (
               <div ref={formRef} className="scroll-mt-28">
                 <ReviewForm
                   productHandle={productHandle}
-                  sizes={sizes}
+                  reviewer={reviewer}
                   onCancel={() => setIsFormOpen(false)}
                   onCreated={handleCreated}
                 />
@@ -395,13 +430,22 @@ export function ProductReviews({
                   Bought this pair? Your review helps other customers pick the
                   right size.
                 </p>
-                <button
-                  type="button"
-                  onClick={openForm}
-                  className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl border border-brand px-5 text-sm font-bold text-brand transition-colors hover:bg-brand hover:text-white"
-                >
-                  Write the first review
-                </button>
+                {reviewer ? (
+                  <button
+                    type="button"
+                    onClick={openForm}
+                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl border border-brand px-5 text-sm font-bold text-brand transition-colors hover:bg-brand hover:text-white"
+                  >
+                    Write the first review
+                  </button>
+                ) : (
+                  <Link
+                    href={signInHref}
+                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl border border-brand px-5 text-sm font-bold text-brand transition-colors hover:bg-brand hover:text-white"
+                  >
+                    Sign in to write the first review
+                  </Link>
+                )}
               </div>
             ) : null}
           </div>
@@ -424,12 +468,12 @@ export function ProductReviews({
 
 function ReviewForm({
   productHandle,
-  sizes,
+  reviewer,
   onCancel,
   onCreated,
 }: {
   productHandle: string;
-  sizes: readonly EuSize[];
+  reviewer: ReviewerInfo;
   onCancel: () => void;
   onCreated: (review: ProductReview) => void;
 }) {
@@ -577,7 +621,8 @@ function ReviewForm({
             Write a review
           </h3>
           <p className="mt-1 text-sm text-muted">
-            Photos are optional. Everything else takes a minute.
+            Posting as <span className="font-semibold text-ink">{reviewer.displayName}</span>.
+            Photos are optional.
           </p>
         </div>
         <button
@@ -658,40 +703,6 @@ function ReviewForm({
             className="mt-2 w-full rounded-xl border border-line-strong bg-white px-4 py-3 text-base leading-6 outline-none placeholder:text-muted-soft focus:border-brand focus:ring-2 focus:ring-brand/20"
           />
         </label>
-
-        <div className="grid gap-5 sm:grid-cols-2">
-          <label className="block">
-            <span className="text-sm font-bold">Name to display</span>
-            <input
-              name="name"
-              required
-              minLength={REVIEW_LIMITS.nameMin}
-              maxLength={REVIEW_LIMITS.nameMax}
-              autoComplete="name"
-              placeholder="e.g. Ama K."
-              className="mt-2 h-12 w-full rounded-xl border border-line-strong bg-white px-4 text-base outline-none placeholder:text-muted-soft focus:border-brand focus:ring-2 focus:ring-brand/20"
-            />
-          </label>
-
-          <label className="block">
-            <span className="text-sm font-bold">
-              Size you wear{" "}
-              <span className="font-normal text-muted">(optional)</span>
-            </span>
-            <select
-              name="size"
-              defaultValue=""
-              className="mt-2 h-12 w-full appearance-none rounded-xl border border-line-strong bg-white px-4 text-base outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
-            >
-              <option value="">Prefer not to say</option>
-              {sizes.map((size) => (
-                <option key={size} value={size}>
-                  EU {size}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
 
         <fieldset>
           <legend className="text-sm font-bold">

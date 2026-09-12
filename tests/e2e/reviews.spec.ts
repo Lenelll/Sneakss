@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("product reviews", () => {
-  test("product page shows the reviews section and a review form", async ({
+  test("signed-out visitors see the reviews section and are asked to sign in", async ({
     page,
   }) => {
     await page.goto("/shop");
@@ -11,27 +11,26 @@ test.describe("product reviews", () => {
     await expect(page).toHaveURL(/\/products\//);
 
     const reviews = page.locator("#reviews");
-    await expect(
-      reviews.getByRole("heading", { level: 2 }),
-    ).toBeVisible();
+    await expect(reviews.getByRole("heading", { level: 2 })).toBeVisible();
 
-    await reviews.getByRole("button", { name: /Write (a|the first) review/ }).first().click();
-
-    const form = reviews.getByRole("form", { name: "Write a review" });
-    await expect(form).toBeVisible();
-    await expect(form.getByRole("radio", { name: "5 stars" })).toBeVisible();
-    await expect(form.getByLabel("Headline")).toBeVisible();
-    await expect(form.getByLabel("Your review")).toBeVisible();
-    await expect(form.getByLabel("Name to display")).toBeVisible();
-    // Photos are optional: the file input exists but nothing is required.
-    await expect(form.locator('input[type="file"]')).toBeAttached();
-    await expect(form.locator('input[type="file"]')).not.toHaveAttribute(
-      "required",
-      /.*/,
+    // Reviews are posted under the account name, so signed-out visitors get
+    // a sign-in link instead of the form.
+    const signIn = reviews
+      .getByRole("link", { name: /Sign in to write/ })
+      .first();
+    await expect(signIn).toBeVisible();
+    await expect(signIn).toHaveAttribute(
+      "href",
+      /\/account\/sign-in\?returnTo=/,
     );
+    await expect(
+      reviews.getByRole("form", { name: "Write a review" }),
+    ).toHaveCount(0);
   });
 
-  test("the reviews API validates input", async ({ request }) => {
+  test("the reviews API validates input and requires an account", async ({
+    request,
+  }) => {
     const missingHandle = await request.get("/api/reviews");
     expect(missingHandle.status()).toBe(400);
 
@@ -48,6 +47,11 @@ test.describe("product reviews", () => {
       data: { handle: "x" },
     });
     expect(wrongType.status()).toBe(415);
+
+    const signedOut = await request.post("/api/reviews", {
+      multipart: { handle: "x", rating: "5", title: "Great", body: "Great pair." },
+    });
+    expect(signedOut.status()).toBe(401);
 
     const missingPhoto = await request.get(
       "/api/reviews/photos/00000000-0000-4000-8000-000000000000",

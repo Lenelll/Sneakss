@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getCommerceProduct } from "@/lib/catalog-source";
+import { getReviewerIdentity } from "@/lib/reviews/reviewer";
 import {
   createReview,
   getProductReviews,
   normalizeFit,
-  normalizeSize,
   ReviewValidationError,
 } from "@/lib/reviews/store";
 import {
@@ -17,8 +17,6 @@ import { getCustomerSessionState } from "@/lib/shopify/customer-auth";
 
 export const dynamic = "force-dynamic";
 
-const REVIEWER_COOKIE = "svgh_reviewer";
-const REVIEWER_COOKIE_MAX_AGE = 365 * 24 * 60 * 60;
 const HANDLE_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,253}[a-z0-9])?$/;
 
 function noStore(response: NextResponse): NextResponse {
@@ -151,6 +149,18 @@ export async function POST(request: NextRequest) {
     return errorResponse("The review could not be read.", 415);
   }
 
+  // Reviews are tied to the signed-in customer account.
+  const sessionState = await getCustomerSessionState();
+
+  if (sessionState.status !== "valid") {
+    return errorResponse(
+      sessionState.status === "refresh-required"
+        ? "Your session needs a refresh. Reload the page and try again."
+        : "Sign in to your account to post a review.",
+      401,
+    );
+  }
+
   let formData: FormData;
 
   try {
@@ -170,51 +180,32 @@ export async function POST(request: NextRequest) {
     return errorResponse("That product could not be found.", 404);
   }
 
-  const { product } = await getCommerceProduct(handle);
+  const [{ product }, reviewer] = await Promise.all([
+    getCommerceProduct(handle),
+    getReviewerIdentity(sessionState.session),
+  ]);
 
   if (!product) {
     return errorResponse("That product could not be found.", 404);
   }
 
-  const reviewerId =
-    request.cookies.get(REVIEWER_COOKIE)?.value.match(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-    )?.[0] ?? crypto.randomUUID();
-  const sessionState = await getCustomerSessionState();
-  const verified = sessionState.status === "valid";
-
   try {
     const photos = await readPhotos(formData);
-    const requestedSize = normalizeSize(fieldText(formData, "size"));
     const review = await createReview({
       productHandle: product.handle,
       productTitle: product.title,
       rating: fieldInt(formData, "rating"),
       title: fieldText(formData, "title"),
       body: fieldText(formData, "body"),
-      authorName: fieldText(formData, "name"),
-      verified,
+      authorName: reviewer.displayName,
+      verified: true,
       fit: normalizeFit(fieldText(formData, "fit")),
-      size:
-        requestedSize &&
-        product.variants.some((variant) => variant.size === requestedSize)
-          ? requestedSize
-          : null,
-      reviewerId,
+      size: null,
+      reviewerId: reviewer.id,
       photos,
     });
 
-    const response = noStore(
-      NextResponse.json({ review }, { status: 201 }),
-    );
-    response.cookies.set(REVIEWER_COOKIE, reviewerId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: REVIEWER_COOKIE_MAX_AGE,
-    });
-    return response;
+    return noStore(NextResponse.json({ review }, { status: 201 }));
   } catch (error) {
     if (error instanceof ReviewValidationError) {
       return errorResponse(error.message, error.status);

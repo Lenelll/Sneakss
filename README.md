@@ -158,11 +158,11 @@ added. No Paystack environment variable belongs in this project.
 
 ## Customer reviews
 
-Product pages accept customer reviews with a star rating, headline, review
-text, display name, optional fit feedback, optional EU size and up to three
-optional photos. Photos are resized to JPEG in the browser before upload and
-validated by magic bytes on the server. Reviews posted while signed in to a
-Shopify customer account are labelled "Verified account". Ratings appear on
+Signed-in customers can review products with a star rating, headline, review
+text, optional fit feedback and up to three optional photos. Reviews are
+posted under the customer's account name (first name plus last initial), and
+each customer can review a product once. Photos are resized to JPEG in the browser before upload and
+validated by magic bytes on the server. Ratings appear on
 product cards, in the product page header, in Product JSON-LD for search
 engines, and the newest photo reviews are highlighted on the home page.
 
@@ -177,8 +177,8 @@ Reviews and photos live in a small key/value store chosen at runtime
 
 Without any of these in production the store falls back to process memory
 and logs a warning, so configure one before launch. There is no moderation
-queue yet: reviews publish immediately, with a honeypot field, a per-visitor
-cooldown and one review per product per visitor as basic abuse controls.
+queue yet: reviews publish immediately, with a honeypot field, a per-customer
+cooldown and one review per product per customer as basic abuse controls.
 
 ## Paystack launch check
 

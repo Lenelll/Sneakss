@@ -9,11 +9,12 @@ import {
   getCommerceCatalog,
   getCommerceProduct,
 } from "@/lib/catalog-source";
+import { getCurrentReviewer } from "@/lib/reviews/reviewer";
 import {
   getProductReviews,
+  getReviewStoreKind,
   getReviewSummaries,
 } from "@/lib/reviews/store";
-import { getCustomerSessionState } from "@/lib/shopify/customer-auth";
 
 import { ProductDetail } from "./product-detail";
 
@@ -65,11 +66,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  const [catalog, reviewData, sessionState] = await Promise.all([
+  const [catalog, reviewData, reviewer, storeKind] = await Promise.all([
     getCommerceCatalog(),
     getProductReviews(product.handle),
-    getCustomerSessionState(),
+    getCurrentReviewer(),
+    getReviewStoreKind(),
   ]);
+  const storageWarning =
+    process.env.NODE_ENV === "production" && storeKind === "memory";
   const relatedProducts = getRelatedProducts(product, 3, catalog.products);
   const relatedRatings = await getReviewSummaries(
     relatedProducts.map((related) => related.handle),
@@ -165,10 +169,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <ProductReviews
         productHandle={product.handle}
         productTitle={product.title}
-        sizes={product.variants.map((variant) => variant.size)}
         initialReviews={reviewData.reviews}
         initialSummary={reviewData.summary}
-        isSignedIn={sessionState.status === "valid"}
+        reviewer={reviewer ? { displayName: reviewer.displayName } : null}
+        signInHref={`/account/sign-in?returnTo=${encodeURIComponent(
+          `/products/${product.handle}#reviews`,
+        )}`}
+        storageWarning={storageWarning}
       />
 
       {relatedProducts.length > 0 ? (

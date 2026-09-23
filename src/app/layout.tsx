@@ -54,7 +54,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0e4e3e",
+  themeColor: "#000000",
   colorScheme: "light",
 };
 
@@ -75,7 +75,7 @@ export default function RootLayout({
         >
           <a
             href="#main-content"
-            className="fixed left-4 top-4 z-[100] -translate-y-24 rounded-lg bg-white px-4 py-3 text-sm font-semibold text-ink shadow-lg transition-transform focus:translate-y-0"
+            className="fixed left-4 top-4 z-[100] -translate-y-24 border border-ink bg-white px-4 py-3 text-sm font-semibold text-ink transition-transform focus:translate-y-0"
           >
             Skip to content
           </a>

@@ -63,7 +63,7 @@ export function CartDrawer() {
             </p>
             <h2
               id="cart-drawer-title"
-              className="mt-1 text-2xl font-semibold tracking-[-0.04em]"
+              className="mt-1 text-2xl font-light tracking-[-0.02em]"
             >
               Bag {itemCount > 0 ? `(${itemCount})` : ""}
             </h2>
@@ -79,7 +79,7 @@ export function CartDrawer() {
 
         {lines.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-            <p className="max-w-xs text-3xl font-semibold tracking-[-0.045em]">
+            <p className="section-title max-w-xs">
               Your next pair is still out there.
             </p>
             <p className="mt-3 max-w-sm text-sm leading-6 text-muted">
@@ -89,7 +89,7 @@ export function CartDrawer() {
             <Link
               href="/shop"
               onClick={closeCart}
-              className="mt-7 rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              className="mt-7 rounded-none bg-ink px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             >
               Shop sneakers
             </Link>
@@ -98,7 +98,7 @@ export function CartDrawer() {
           <>
             {cartError ? (
               <p
-                className="mx-5 mt-5 rounded-xl border border-accent/50 bg-[#FFF9E8] p-3 text-xs leading-5 text-[#584814] sm:mx-7"
+                className="mx-5 mt-5 rounded-none border border-line-strong bg-surface-2 p-3 text-xs leading-5 text-ink-soft sm:mx-7"
                 role="alert"
               >
                 {cartError}
@@ -113,7 +113,7 @@ export function CartDrawer() {
                   <Link
                     href={`/products/${line.product.handle}`}
                     onClick={closeCart}
-                    className="relative aspect-square overflow-hidden rounded-2xl bg-canvas"
+                    className="relative aspect-square overflow-hidden rounded-none bg-canvas"
                   >
                     <Image
                       src={line.product.images[0].src}
@@ -147,7 +147,7 @@ export function CartDrawer() {
 
                     <div className="mt-4 flex items-center justify-between">
                       <div
-                        className="inline-flex items-center rounded-lg border border-line"
+                        className="inline-flex items-center rounded-none border border-line"
                         aria-label={`Quantity for ${line.product.title}, ${line.variant.sizeLabel}`}
                       >
                         <button
@@ -209,7 +209,7 @@ export function CartDrawer() {
               <Link
                 href="/cart"
                 onClick={closeCart}
-                className="mt-5 flex w-full items-center justify-center rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                className="mt-5 flex w-full items-center justify-center rounded-none bg-ink px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
                 Review bag
               </Link>

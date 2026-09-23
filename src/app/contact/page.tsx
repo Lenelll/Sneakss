@@ -34,7 +34,7 @@ export default function ContactPage() {
             <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-muted">
               Customer care
             </p>
-            <h1 className="text-5xl font-medium leading-none tracking-[-0.05em] sm:text-6xl lg:text-7xl">
+            <h1 className="display-type">
               How can we help?
             </h1>
           </div>
@@ -46,7 +46,7 @@ export default function ContactPage() {
 
         <aside
           aria-label="Draft content notice"
-          className="my-10 border-l-4 border-accent bg-white px-5 py-4 text-sm leading-6 text-muted sm:px-6"
+          className="my-10 border-l-2 border-ink bg-surface-2 px-5 py-4 text-sm leading-6 text-muted sm:px-6"
         >
           <span className="font-semibold text-ink">Draft content.</span>{" "}
           Contact details and support hours are placeholders until the client

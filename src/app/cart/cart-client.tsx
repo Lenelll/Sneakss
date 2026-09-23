@@ -35,7 +35,7 @@ export function CartClient() {
         <p className="text-xs font-semibold tracking-[0.18em] text-brand uppercase">
           Your bag
         </p>
-        <h1 className="mt-4 text-5xl font-semibold tracking-[-0.055em] sm:text-6xl">
+        <h1 className="mt-4 display-type">
           The vault is empty.
         </h1>
         <p className="mt-5 max-w-lg text-base leading-7 text-muted">
@@ -43,7 +43,7 @@ export function CartClient() {
           to continue.
         </p>
         <Link
-          className="mt-8 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          className="mt-8 rounded-none bg-ink px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           href="/shop"
         >
           Shop the collection
@@ -59,12 +59,12 @@ export function CartClient() {
           <p className="text-xs font-semibold tracking-[0.18em] text-brand uppercase">
             Your bag
           </p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-[-0.045em] sm:text-5xl">
+          <h1 className="mt-3 section-title">
             {itemCount} {itemCount === 1 ? "item" : "items"}
           </h1>
         </div>
         <Link
-          className="text-sm font-semibold text-brand underline decoration-accent decoration-2 underline-offset-4"
+          className="text-sm font-semibold text-brand underline decoration-brand decoration-2 underline-offset-4"
           href="/shop"
         >
           Continue shopping
@@ -75,7 +75,7 @@ export function CartClient() {
         <div>
           {cartError ? (
             <p
-              className="mb-6 rounded-2xl border border-accent/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]"
+              className="mb-6 rounded-none border border-line-strong bg-surface-2 p-4 text-sm leading-6 text-ink-soft"
               role="alert"
             >
               {cartError}
@@ -88,7 +88,7 @@ export function CartClient() {
               key={line.lineId}
             >
               <Link
-                className="relative aspect-square overflow-hidden rounded-2xl bg-white"
+                className="relative aspect-square overflow-hidden rounded-none bg-white"
                 href={`/products/${line.product.handle}`}
               >
                 <Image
@@ -124,7 +124,7 @@ export function CartClient() {
                 <div className="mt-6 flex flex-wrap items-center justify-between gap-5 sm:mt-auto">
                   <div
                     aria-label={`Quantity for ${line.product.title}, ${line.variant.sizeLabel}`}
-                    className="inline-flex items-center rounded-xl border border-line-strong bg-white"
+                    className="inline-flex items-center rounded-none border border-line-strong bg-white"
                     role="group"
                   >
                     <button
@@ -176,8 +176,8 @@ export function CartClient() {
         </ul>
         </div>
 
-        <aside className="h-fit rounded-3xl bg-brand p-6 text-white sm:p-7 lg:sticky lg:top-28">
-          <p className="text-xs font-semibold tracking-[0.16em] text-accent uppercase">
+        <aside className="h-fit rounded-none bg-ink p-6 text-white sm:p-7 lg:sticky lg:top-28">
+          <p className="text-[0.62rem] font-semibold tracking-[0.22em] text-white/55 uppercase">
             Order summary
           </p>
           <div className="mt-6 flex items-center justify-between border-b border-white/20 pb-5">
@@ -192,7 +192,7 @@ export function CartClient() {
               : "This preview bag uses temporary products and cannot create a real order."}
           </p>
           <Link
-            className="mt-6 block rounded-xl bg-accent px-5 py-3.5 text-center text-sm font-semibold text-ink transition hover:bg-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="mt-6 block bg-white px-5 py-3.5 text-center text-sm font-semibold text-ink transition hover:bg-brand hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             href="/checkout"
           >
             Review checkout

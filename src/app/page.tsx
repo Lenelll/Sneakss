@@ -50,17 +50,15 @@ export default async function HomePage() {
   const activeProducts = catalog.products.filter(
     (product) => product.status === "active",
   );
-  const taggedFeatured = getFeaturedProducts(4, catalog.products);
+  const taggedFeatured = getFeaturedProducts(8, catalog.products);
   const featuredProducts =
-    taggedFeatured.length > 0 ? taggedFeatured : activeProducts.slice(0, 4);
-  const heroProduct =
-    featuredProducts[0] ?? activeProducts[0] ?? null;
-  const heroImage =
-    heroProduct?.images[0] ?? {
-      id: "hero-fallback",
-      src: "/images/products/demo-terrace-forest.png",
-      alt: "Sneaker on a neutral background",
-    };
+    taggedFeatured.length > 0 ? taggedFeatured : activeProducts.slice(0, 8);
+  const heroProduct = featuredProducts[0] ?? activeProducts[0] ?? null;
+  const heroImage = heroProduct?.images[0] ?? {
+    id: "hero-fallback",
+    src: "/images/products/demo-terrace-forest.png",
+    alt: "Sneaker on a neutral background",
+  };
   const inStockCount = activeProducts.filter((product) =>
     product.variants.some((variant) => variant.availableForSale),
   ).length;
@@ -90,140 +88,60 @@ export default async function HomePage() {
   })).filter((entry) => entry.count > 0);
 
   return (
-    <main className="overflow-hidden">
-      {/* Hero */}
-      <section className="page-shell pt-4 pb-6 sm:pt-6 sm:pb-8">
-        <div className="hero-panel relative grid min-h-[44rem] overflow-hidden rounded-[1.75rem] text-white lg:grid-cols-[1.02fr_0.98fr]">
-          <div className="hero-grid pointer-events-none absolute inset-0" aria-hidden="true" />
+    <main className="overflow-hidden bg-canvas">
+      {/*
+        Hero: one full-bleed photograph, a centred light headline and a
+        single outlined call to action. Nothing else competes with it.
+      */}
+      <section className="hero-media flex min-h-[38rem] items-center justify-center lg:min-h-[44rem]">
+        <Image
+          src={heroImage.src}
+          alt={heroImage.alt}
+          fill
+          priority
+          sizes="100vw"
+          className="-z-10 object-cover"
+        />
+        <div className="hero-scrim absolute inset-0 -z-10" aria-hidden="true" />
 
-          <div className="relative z-10 flex flex-col justify-between gap-14 p-6 sm:p-10 lg:p-14">
-            <div className="reveal-up flex items-center gap-3">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent" />
-              </span>
-              <p className="eyebrow text-white/75">
-                Accra, Ghana · Live sneaker collection
-              </p>
-            </div>
-
-            <div className="reveal-up-delayed max-w-[46rem]">
-              <h1 className="display-type text-balance">
-                Find your next pair.
-                <span className="mt-2 block text-accent">Sized right.</span>
-              </h1>
-              <p className="mt-7 max-w-xl text-base leading-7 text-white/75 sm:text-lg sm:leading-8">
-                A focused sneaker edit with live EU size availability, prices
-                in Ghana cedis and secure checkout. From first look to your
-                door.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  href="/shop"
-                  className="inline-flex min-h-13 items-center justify-center rounded-xl bg-accent px-7 text-sm font-bold tracking-[0.13em] text-ink uppercase transition-colors hover:bg-white"
-                >
-                  Shop all pairs
-                </Link>
-                <Link
-                  href="#categories"
-                  className="inline-flex min-h-13 items-center justify-center rounded-xl border border-white/35 px-7 text-sm font-bold tracking-[0.13em] uppercase transition-colors hover:border-white hover:bg-white hover:text-brand-deep"
-                >
-                  Browse categories
-                </Link>
-              </div>
-            </div>
-
-            <dl className="reveal-up-late grid grid-cols-2 gap-x-6 gap-y-5 border-t border-white/15 pt-6 sm:grid-cols-4">
-              {[
-                [String(inStockCount), "styles in stock"],
-                [String(brandCount), brandCount === 1 ? "brand" : "brands"],
-                ["EU 36–47", "size range"],
-                ["GHS", "all pricing"],
-              ].map(([value, label]) => (
-                <div key={label}>
-                  <dt className="text-[0.62rem] font-bold tracking-[0.18em] text-white/55 uppercase">
-                    {label}
-                  </dt>
-                  <dd className="mt-1 text-2xl font-semibold tracking-[-0.03em]">
-                    {value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-
-          <div className="relative z-10 flex min-h-[30rem] items-center justify-center p-6 sm:p-10 lg:min-h-full lg:p-12">
-            <div className="float-slow relative w-full max-w-[34rem]">
-              <div
-                aria-hidden="true"
-                className="absolute -inset-6 rounded-[2.5rem] bg-accent/20 blur-3xl"
-              />
-              <div className="relative aspect-[4/4.2] overflow-hidden rounded-[2rem] border border-white/15 bg-surface-2 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.65)] lg:-rotate-2">
-                <Image
-                  src={heroImage.src}
-                  alt={heroImage.alt}
-                  fill
-                  priority
-                  sizes="(min-width: 1024px) 44vw, 100vw"
-                  className="object-cover"
-                />
-                {heroRating ? (
-                  <span className="absolute top-5 right-5 flex items-center gap-2 rounded-full bg-white/92 px-3 py-1.5 text-xs font-semibold text-ink backdrop-blur">
-                    <RatingStars value={heroRating.average} size="sm" />
-                    {heroRating.average.toFixed(1)}
-                  </span>
-                ) : null}
-              </div>
-
-              {heroProduct ? (
-                <Link
-                  href={`/products/${heroProduct.handle}`}
-                  className="group absolute -bottom-5 left-4 flex w-[calc(100%-2rem)] items-center justify-between gap-4 rounded-2xl bg-white p-4 text-ink shadow-[0_24px_60px_rgba(12,18,48,0.35)] transition hover:-translate-y-0.5 sm:left-6 sm:w-[22rem]"
-                >
-                  <div className="min-w-0">
-                    <p className="eyebrow text-brand">{heroProduct.brand}</p>
-                    <p className="mt-1 truncate text-lg font-semibold tracking-[-0.03em]">
-                      {heroProduct.title}
-                    </p>
-                    <p className="text-xs text-muted">
-                      {formatGHS(heroProduct.price)} ·{" "}
-                      {
-                        heroProduct.variants.filter(
-                          (variant) => variant.availableForSale,
-                        ).length
-                      }{" "}
-                      sizes in stock
-                    </p>
-                  </div>
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-white transition-colors group-hover:bg-accent group-hover:text-ink">
-                    <span aria-hidden="true" className="text-lg leading-none">
-                      →
-                    </span>
-                    <span className="sr-only">View {heroProduct.title}</span>
-                  </span>
-                </Link>
-              ) : null}
-            </div>
+        <div className="page-shell reveal-up w-full py-24 text-center text-white">
+          <p className="eyebrow text-white/70">Accra, Ghana</p>
+          <h1 className="display-type mx-auto mt-6 max-w-4xl text-balance">
+            Browse our latest pairs
+          </h1>
+          <p className="mx-auto mt-7 max-w-xl text-base leading-7 text-white/80">
+            A focused sneaker edit with live EU size availability, prices in
+            Ghana cedis and secure checkout.
+          </p>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+            <Link href="/shop" className="btn btn-ghost-light">
+              Shop all
+            </Link>
+            <Link
+              href="#categories"
+              className="min-h-13 px-4 py-4 text-xs font-semibold tracking-[0.14em] text-white/80 uppercase underline decoration-1 underline-offset-8 transition-colors hover:text-white"
+            >
+              Browse categories
+            </Link>
           </div>
         </div>
-
-        {catalog.notice ? (
-          <p className="mt-4 text-xs leading-5 text-muted">{catalog.notice}</p>
-        ) : null}
       </section>
 
-      {/* Ticker */}
-      <div className="overflow-hidden border-y border-line bg-accent text-ink" aria-hidden="true">
+      {/* Marquee: monochrome, hairline-bounded. */}
+      <div
+        className="overflow-hidden border-b border-line bg-ink text-white"
+        aria-hidden="true"
+      >
         <div className="ticker-track py-3">
           {[0, 1].map((copy) => (
             <ul key={copy} className="flex shrink-0 items-center">
               {tickerItems.map((item) => (
                 <li
                   key={`${copy}-${item}`}
-                  className="flex items-center gap-6 pr-6 text-[0.68rem] font-bold tracking-[0.2em] whitespace-nowrap uppercase"
+                  className="flex items-center gap-8 pr-8 text-[0.66rem] font-medium tracking-[0.22em] whitespace-nowrap uppercase"
                 >
                   {item}
-                  <span className="h-1.5 w-1.5 rounded-full bg-ink/60" />
+                  <span className="h-1 w-1 rounded-full bg-white/45" />
                 </li>
               ))}
             </ul>
@@ -231,132 +149,232 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* Categories + sizes */}
-      <section id="categories" className="page-shell scroll-mt-24 py-14 sm:py-20">
-        <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
-          <div>
-            <p className="eyebrow text-brand">Browse by category</p>
-            <h2 className="section-title mt-3">Built for how you move.</h2>
-            <ul className="mt-8 grid gap-2 sm:grid-cols-2">
-              {categoryCounts.map(({ category, count }) => (
-                <li key={category}>
-                  <Link
-                    href={`/shop?category=${encodeURIComponent(category)}`}
-                    className="group flex items-center justify-between rounded-2xl border border-line bg-surface px-5 py-4 transition hover:border-brand hover:shadow-[0_20px_40px_-30px_rgba(39,80,214,0.6)]"
-                  >
-                    <span className="text-base font-semibold tracking-[-0.02em]">
-                      {category}
-                    </span>
-                    <span className="rounded-full bg-brand-tint px-2.5 py-1 text-xs font-bold text-brand transition-colors group-hover:bg-brand group-hover:text-white">
-                      {count}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+      {/* Quiet facts row — the hero stats, moved off the photograph. */}
+      <section className="page-shell border-b border-line py-8">
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-4">
+          {[
+            [String(inStockCount), "styles in stock"],
+            [String(brandCount), brandCount === 1 ? "brand" : "brands"],
+            ["EU 36–47", "size range"],
+            ["GHS", "all pricing"],
+          ].map(([value, label]) => (
+            <div key={label}>
+              <dd className="text-2xl font-light tracking-[-0.02em] text-ink">
+                {value}
+              </dd>
+              <dt className="mt-1 text-[0.62rem] font-semibold tracking-[0.18em] text-muted uppercase">
+                {label}
+              </dt>
+            </div>
+          ))}
+        </dl>
+        {catalog.notice ? (
+          <p className="mt-6 text-xs leading-5 text-muted">{catalog.notice}</p>
+        ) : null}
+      </section>
 
-          <div className="rounded-[1.75rem] bg-surface-2 p-6 sm:p-8">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <p className="eyebrow text-brand">Shop your size</p>
-                <p className="mt-2 text-sm text-muted">
-                  Tap a size to see only pairs in stock for you.
-                </p>
-              </div>
-              <Link
-                href="/shop"
-                className="text-xs font-bold text-brand underline decoration-1 underline-offset-4"
-              >
-                All sizes
-              </Link>
-            </div>
-            <div className="mt-6 grid grid-cols-4 gap-2 sm:grid-cols-8 lg:grid-cols-4 xl:grid-cols-8">
-              {popularSizes.map((size) => (
-                <Link
-                  key={size}
-                  href={`/shop?size=${size}`}
-                  aria-label={`Shop EU size ${size}`}
-                  className="flex min-h-14 items-center justify-center rounded-xl border border-line bg-surface text-base font-semibold transition-colors hover:border-brand hover:bg-brand hover:text-white"
-                >
-                  {size}
-                </Link>
-              ))}
-            </div>
-            <p className="mt-4 text-xs text-muted">
-              Half sizes and EU 36–47 available on the shop page.
-            </p>
-          </div>
+      {/* Featured grid sits high on the page, as on a supply-house storefront. */}
+      <section className="page-shell py-14 sm:py-20">
+        <div className="mb-8 flex flex-wrap items-baseline justify-between gap-4">
+          <h2 className="text-2xl font-light tracking-[-0.02em] sm:text-3xl">
+            Featured products
+          </h2>
+          <Link
+            href="/shop"
+            className="text-xs font-semibold tracking-[0.14em] text-ink uppercase underline decoration-1 underline-offset-8 transition-colors hover:text-brand"
+          >
+            View all
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-4 lg:grid-cols-4">
+          {featuredProducts.map((product, index) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              rating={ratings[product.handle]}
+              priority={index < 2}
+            />
+          ))}
         </div>
       </section>
 
-      {/* Feature band */}
-      <section className="page-shell pb-20 sm:pb-28">
-        <div className="grid overflow-hidden rounded-[1.75rem] bg-brand text-white lg:grid-cols-2">
-          <div className="relative min-h-[26rem] overflow-hidden lg:min-h-[32rem]">
-            <Image
-              src="/images/products/demo-runner-blue.png"
-              alt="Lifestyle runner in dusty blue"
-              fill
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className="object-cover"
-            />
-          </div>
-          <div className="flex flex-col justify-between gap-14 p-7 sm:p-12 lg:p-16">
-            <p className="eyebrow text-accent">A better way to browse</p>
+      {/* Categories + sizes */}
+      <section
+        id="categories"
+        className="border-t border-line bg-surface-2 scroll-mt-24"
+      >
+        <div className="page-shell py-14 sm:py-20">
+          <div className="grid gap-12 lg:grid-cols-[1fr_1.15fr] lg:gap-20">
             <div>
-              <h2 className="section-title max-w-xl">
-                Your size, without the guesswork.
-              </h2>
-              <p className="mt-6 max-w-lg text-base leading-7 text-white/75">
-                Every size is tied to live inventory, so sold-out options
-                never make it to checkout. Reviews tell you whether a pair
-                runs small, true or large before you order.
-              </p>
-              <div className="mt-8 flex flex-wrap gap-3">
+              <p className="section-label text-muted">Browse by category</p>
+              <h2 className="section-title mt-4">Built for how you move.</h2>
+              <ul className="mt-8 border-t border-line-strong">
+                {categoryCounts.map(({ category, count }) => (
+                  <li key={category}>
+                    <Link
+                      href={`/shop?category=${encodeURIComponent(category)}`}
+                      className="group flex items-center justify-between border-b border-line-strong py-4 transition-colors hover:text-brand"
+                    >
+                      <span className="text-base tracking-[-0.01em]">
+                        {category}
+                      </span>
+                      <span className="text-xs font-semibold text-muted transition-colors group-hover:text-brand">
+                        {count}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="bg-surface p-6 sm:p-10">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <p className="section-label text-muted">Shop your size</p>
+                  <p className="mt-3 text-sm text-muted">
+                    Tap a size to see only pairs in stock for you.
+                  </p>
+                </div>
                 <Link
                   href="/shop"
-                  className="inline-flex min-h-13 items-center justify-center rounded-xl bg-accent px-7 text-sm font-bold tracking-[0.13em] text-ink uppercase transition-colors hover:bg-white"
+                  className="shrink-0 text-xs font-semibold tracking-[0.12em] text-brand uppercase underline decoration-1 underline-offset-4"
                 >
-                  Browse by EU size
-                </Link>
-                <Link
-                  href="/about"
-                  className="inline-flex min-h-13 items-center justify-center rounded-xl border border-white/40 px-7 text-sm font-bold tracking-[0.13em] uppercase transition-colors hover:bg-white hover:text-brand"
-                >
-                  Our approach
+                  All sizes
                 </Link>
               </div>
+              <div className="mt-8 grid grid-cols-4 gap-2 sm:grid-cols-8 lg:grid-cols-4 xl:grid-cols-8">
+                {popularSizes.map((size) => (
+                  <Link
+                    key={size}
+                    href={`/shop?size=${size}`}
+                    aria-label={`Shop EU size ${size}`}
+                    className="flex min-h-14 items-center justify-center border border-line-strong text-base transition-colors hover:border-ink hover:bg-ink hover:text-white"
+                  >
+                    {size}
+                  </Link>
+                ))}
+              </div>
+              <p className="mt-5 text-xs text-muted">
+                Half sizes and EU 36–47 available on the shop page.
+              </p>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Editorial band: photograph against black, no colour block. */}
+      <section className="grid lg:grid-cols-2">
+        <div className="relative min-h-[24rem] lg:min-h-[34rem]">
+          <Image
+            src="/images/products/demo-runner-blue.png"
+            alt="Lifestyle runner in dusty blue"
+            fill
+            sizes="(min-width: 1024px) 50vw, 100vw"
+            className="object-cover"
+          />
+        </div>
+        <div className="flex flex-col justify-center gap-8 bg-ink px-6 py-16 text-white sm:px-12 lg:px-16 lg:py-20">
+          <p className="section-label text-white/55">A better way to browse</p>
+          <h2 className="section-title max-w-xl">
+            Your size, without the guesswork.
+          </h2>
+          <p className="max-w-lg text-base leading-7 text-white/70">
+            Every size is tied to live inventory, so sold-out options never make
+            it to checkout. Reviews tell you whether a pair runs small, true or
+            large before you order.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/shop" className="btn btn-ghost-light">
+              Browse by EU size
+            </Link>
+            <Link
+              href="/about"
+              className="min-h-13 px-4 py-4 text-xs font-semibold tracking-[0.14em] text-white/75 uppercase underline decoration-1 underline-offset-8 transition-colors hover:text-white"
+            >
+              Our approach
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* A single featured pair, pulled forward from the edit. */}
+      {heroProduct ? (
+        <section className="page-shell border-b border-line py-14 sm:py-20">
+          <Link
+            href={`/products/${heroProduct.handle}`}
+            className="group grid items-center gap-8 sm:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] sm:gap-12"
+          >
+            <span className="relative block aspect-square overflow-hidden bg-surface-2">
+              <Image
+                src={heroImage.src}
+                alt={heroImage.alt}
+                fill
+                sizes="(min-width: 640px) 20rem, 100vw"
+                className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+              />
+            </span>
+            <span className="block">
+              <span className="section-label block text-muted">
+                Pair of the moment
+              </span>
+              <span className="mt-4 block text-[0.62rem] font-semibold tracking-[0.18em] text-muted uppercase">
+                {heroProduct.brand}
+              </span>
+              <span className="section-title mt-2 block">
+                {heroProduct.title}
+              </span>
+              <span className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted">
+                <span className="text-base font-semibold text-ink">
+                  {formatGHS(heroProduct.price)}
+                </span>
+                <span>
+                  {
+                    heroProduct.variants.filter(
+                      (variant) => variant.availableForSale,
+                    ).length
+                  }{" "}
+                  sizes in stock
+                </span>
+                {heroRating ? (
+                  <span className="flex items-center gap-2">
+                    <RatingStars value={heroRating.average} size="sm" />
+                    {heroRating.average.toFixed(1)}
+                  </span>
+                ) : null}
+              </span>
+              <span className="mt-7 inline-flex text-xs font-semibold tracking-[0.14em] text-ink uppercase underline decoration-1 underline-offset-8 transition-colors group-hover:text-brand">
+                View this pair
+              </span>
+            </span>
+          </Link>
+        </section>
+      ) : null}
 
       {/* Customer reviews */}
       {recentReviews.length > 0 ? (
-        <section className="border-y border-line bg-surface">
-          <div className="page-shell py-20 sm:py-28">
+        <section className="border-b border-line bg-surface">
+          <div className="page-shell py-14 sm:py-20">
             <div className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="eyebrow text-brand">From our customers</p>
-                <h2 className="section-title mt-3">Worn, rated, shared.</h2>
+                <p className="section-label text-muted">From our customers</p>
+                <h2 className="section-title mt-4">Worn, rated, shared.</h2>
               </div>
               <p className="max-w-sm text-sm leading-6 text-muted">
                 Real reviews and photos from people wearing these pairs.
               </p>
             </div>
-            <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <ul className="grid gap-px bg-line md:grid-cols-2 xl:grid-cols-3">
               {recentReviews.map((review) => (
                 <li
                   key={review.id}
-                  className="flex flex-col rounded-[1.5rem] border border-line bg-canvas p-6"
+                  className="flex flex-col bg-surface p-7"
                 >
                   {review.photos.length > 0 ? (
                     <div className="mb-5 flex gap-2">
                       {review.photos.slice(0, 3).map((photo) => (
                         <span
                           key={photo.id}
-                          className="relative aspect-square w-20 overflow-hidden rounded-xl border border-line bg-surface-2"
+                          className="relative aspect-square w-20 overflow-hidden bg-surface-2"
                         >
                           <Image
                             src={`/api/reviews/photos/${photo.id}`}
@@ -374,13 +392,13 @@ export default async function HomePage() {
                     value={review.rating}
                     label={`${review.rating} out of 5 stars`}
                   />
-                  <h3 className="mt-3 text-lg font-semibold tracking-[-0.02em]">
+                  <h3 className="mt-4 text-base font-semibold tracking-[-0.01em]">
                     {review.title}
                   </h3>
                   <p className="mt-2 line-clamp-4 text-sm leading-6 text-muted">
                     {review.body}
                   </p>
-                  <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-5 text-xs">
+                  <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-6 text-xs">
                     <span className="font-semibold text-ink">
                       {review.authorName}
                     </span>
@@ -391,7 +409,7 @@ export default async function HomePage() {
                     ) : null}
                     <Link
                       href={`/products/${review.productHandle}#reviews`}
-                      className="ml-auto font-bold text-brand underline decoration-1 underline-offset-4"
+                      className="ml-auto font-semibold text-brand underline decoration-1 underline-offset-4"
                     >
                       {review.productTitle}
                     </Link>
@@ -404,17 +422,17 @@ export default async function HomePage() {
       ) : null}
 
       {/* Value props */}
-      <section className={recentReviews.length > 0 ? "" : "border-y border-line bg-surface"}>
-        <div className="page-shell grid divide-y divide-line py-4 md:grid-cols-3 md:divide-x md:divide-y-0">
+      <section className="page-shell">
+        <div className="grid divide-y divide-line py-4 md:grid-cols-3 md:divide-x md:divide-y-0">
           {valueProps.map(({ number, title, copy }) => (
             <article
               key={number}
-              className="py-8 md:px-8 md:first:pl-0 md:last:pr-0"
+              className="py-10 md:px-10 md:first:pl-0 md:last:pr-0"
             >
-              <p className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-brand-tint font-mono text-xs font-bold text-brand">
+              <p className="font-mono text-xs font-semibold tracking-[0.1em] text-muted-soft">
                 {number}
               </p>
-              <h2 className="mt-6 text-xl font-semibold tracking-[-0.03em]">
+              <h2 className="mt-5 text-lg font-semibold tracking-[-0.02em]">
                 {title}
               </h2>
               <p className="mt-2 text-sm leading-6 text-muted">{copy}</p>
@@ -423,61 +441,23 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Featured */}
-      <section className="page-shell py-20 sm:py-28">
-        <div className="mb-10 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="eyebrow text-brand">Selected for you</p>
-            <h2 className="section-title mt-3">Inside the edit.</h2>
-          </div>
-          <Link
-            href="/shop"
-            className="w-fit border-b border-ink pb-1 text-sm font-semibold hover:border-brand hover:text-brand"
-          >
-            Shop the full catalogue
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-x-2 gap-y-7 sm:gap-x-3 lg:grid-cols-4">
-          {featuredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              rating={ratings[product.handle]}
-            />
-          ))}
-        </div>
-      </section>
-
       {/* Closing CTA */}
-      <section className="page-shell pb-20 sm:pb-28">
-        <div className="relative overflow-hidden rounded-[1.75rem] bg-ink px-6 py-14 text-center text-white sm:px-12 sm:py-20">
-          <div
-            aria-hidden="true"
-            className="absolute -top-24 right-0 h-72 w-72 rounded-full bg-brand/60 blur-3xl"
-          />
-          <div
-            aria-hidden="true"
-            className="absolute -bottom-24 left-0 h-72 w-72 rounded-full bg-accent/30 blur-3xl"
-          />
-          <div className="relative">
-            <p className="eyebrow text-accent">Ready when you are</p>
-            <h2 className="section-title mx-auto mt-4 max-w-3xl">
-              Your next pair is a few taps away.
-            </h2>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Link
-                href="/shop"
-                className="inline-flex min-h-13 items-center justify-center rounded-xl bg-accent px-7 text-sm font-bold tracking-[0.13em] text-ink uppercase transition-colors hover:bg-white"
-              >
-                Shop now
-              </Link>
-              <Link
-                href="/account"
-                className="inline-flex min-h-13 items-center justify-center rounded-xl border border-white/35 px-7 text-sm font-bold tracking-[0.13em] uppercase transition-colors hover:border-white hover:bg-white hover:text-ink"
-              >
-                Create an account
-              </Link>
-            </div>
+      <section className="bg-ink text-white">
+        <div className="page-shell py-20 text-center sm:py-28">
+          <p className="section-label text-white/55">Ready when you are</p>
+          <h2 className="section-title mx-auto mt-5 max-w-3xl">
+            Your next pair is a few taps away.
+          </h2>
+          <div className="mt-10 flex flex-wrap justify-center gap-3">
+            <Link href="/shop" className="btn btn-ghost-light">
+              Shop now
+            </Link>
+            <Link
+              href="/account"
+              className="min-h-13 px-4 py-4 text-xs font-semibold tracking-[0.14em] text-white/75 uppercase underline decoration-1 underline-offset-8 transition-colors hover:text-white"
+            >
+              Create an account
+            </Link>
           </div>
         </div>
       </section>

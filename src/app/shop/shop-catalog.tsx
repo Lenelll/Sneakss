@@ -51,6 +51,7 @@ export function ShopCatalog({
   const [availability, setAvailability] =
     useState<AvailabilityFilter>("all");
   const [sort, setSort] = useState<ProductSort>(initialSort);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const brands = useMemo(
     () =>
@@ -112,16 +113,22 @@ export function ShopCatalog({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search by style, brand or colour"
-              className="h-14 w-full rounded-xl border border-line-strong bg-white px-5 text-base text-ink outline-none placeholder:text-muted-soft focus:border-brand focus:ring-2 focus:ring-brand/20"
+              className="h-14 w-full border border-line-strong bg-white px-5 text-base text-ink outline-none placeholder:text-muted-soft focus:border-ink"
             />
           </label>
 
-          <label className="block">
+          <label className="relative block">
             <span className="sr-only">Sort products</span>
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute top-1/2 right-5 -translate-y-1/2 text-xs text-muted"
+            >
+              ▾
+            </span>
             <select
               value={sort}
               onChange={(event) => setSort(event.target.value as ProductSort)}
-              className="h-14 w-full appearance-none rounded-xl border border-line-strong bg-white px-5 text-sm font-semibold text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+              className="h-14 w-full appearance-none border border-line-strong bg-white pr-10 pl-5 text-sm text-ink outline-none focus:border-ink"
             >
               {SORT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -132,10 +139,40 @@ export function ShopCatalog({
           </label>
         </div>
 
+        {/*
+          Below desktop the filter column is collapsed behind a toggle so the
+          grid is the first thing in reach.
+        */}
+        <div className="pt-7 lg:hidden">
+          <button
+            type="button"
+            aria-expanded={filtersOpen}
+            aria-controls="shop-filters"
+            onClick={() => setFiltersOpen((open) => !open)}
+            className="flex w-full items-center justify-between border border-line-strong px-5 py-4 text-[0.68rem] font-semibold tracking-[0.2em] uppercase transition-colors hover:border-ink"
+          >
+            <span>
+              Filter
+              {hasActiveFilters ? (
+                <span className="ml-2 font-normal text-brand normal-case">
+                  active
+                </span>
+              ) : null}
+            </span>
+            <span aria-hidden="true">{filtersOpen ? "–" : "+"}</span>
+          </button>
+        </div>
+
         <div className="grid gap-10 pt-7 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-12">
-          <aside aria-label="Product filters" className="lg:sticky lg:top-28 lg:self-start">
+          <aside
+            id="shop-filters"
+            aria-label="Product filters"
+            className={`lg:sticky lg:top-28 lg:block lg:self-start ${
+              filtersOpen ? "" : "hidden"
+            }`}
+          >
             <div className="flex items-center justify-between border-b border-line pb-4">
-              <h2 className="text-sm font-bold tracking-[0.14em] uppercase">
+              <h2 className="text-[0.68rem] font-semibold tracking-[0.2em] uppercase">
                 Filter
               </h2>
               {hasActiveFilters ? (
@@ -170,12 +207,18 @@ export function ShopCatalog({
             </FilterGroup>
 
             <FilterGroup title="Brand">
-              <label className="block">
+              <label className="relative block">
                 <span className="sr-only">Filter by brand</span>
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-muted"
+                >
+                  ▾
+                </span>
                 <select
                   value={brand}
                   onChange={(event) => setBrand(event.target.value)}
-                  className="h-11 w-full appearance-none rounded-lg border border-line-strong bg-white px-3 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
+                  className="h-11 w-full appearance-none border border-line-strong bg-white pr-8 pl-3 text-sm text-ink outline-none focus:border-ink"
                 >
                   <option value="all">All demo brands</option>
                   {brands.map((item) => (
@@ -193,7 +236,7 @@ export function ShopCatalog({
                   type="button"
                   aria-pressed={size === "all"}
                   onClick={() => setSize("all")}
-                  className={`col-span-2 min-h-10 rounded-lg border px-2 text-xs font-bold transition-colors ${
+                  className={`col-span-2 min-h-10 rounded-none border px-2 text-xs font-bold transition-colors ${
                     size === "all"
                       ? "border-brand bg-brand text-white"
                       : "border-line-strong bg-white hover:border-brand"
@@ -207,7 +250,7 @@ export function ShopCatalog({
                     type="button"
                     aria-pressed={size === item}
                     onClick={() => setSize(item)}
-                    className={`min-h-10 rounded-lg border px-1 text-xs font-bold transition-colors ${
+                    className={`min-h-10 rounded-none border px-1 text-xs font-bold transition-colors ${
                       size === item
                         ? "border-brand bg-brand text-white"
                         : "border-line-strong bg-white hover:border-brand"
@@ -249,14 +292,14 @@ export function ShopCatalog({
                 {filteredProducts.length === 1 ? "style" : "styles"}
               </p>
               {size !== "all" ? (
-                <p className="rounded-full border border-brand/25 bg-brand-tint px-3 py-1 text-xs font-bold text-brand">
+                <p className="border border-brand/30 bg-brand-tint px-3 py-1 text-xs font-semibold text-brand">
                   Showing EU {size}
                 </p>
               ) : null}
             </div>
 
             {filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-2 gap-x-2 gap-y-7 sm:gap-x-3 sm:gap-y-9 xl:grid-cols-3">
+              <div className="grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-4 xl:grid-cols-3">
                 {filteredProducts.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -266,11 +309,11 @@ export function ShopCatalog({
                 ))}
               </div>
             ) : (
-              <div className="rounded-[24px] border border-line bg-white px-6 py-16 text-center sm:px-12">
+              <div className="rounded-none border border-line bg-white px-6 py-16 text-center sm:px-12">
                 <p className="text-xs font-bold tracking-[0.16em] text-brand uppercase">
                   Nothing here yet
                 </p>
-                <h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em]">
+                <h2 className="mt-3 section-title">
                   Try a wider search.
                 </h2>
                 <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted">
@@ -280,7 +323,7 @@ export function ShopCatalog({
                 <button
                   type="button"
                   onClick={clearFilters}
-                  className="mt-7 rounded-xl bg-brand px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+                  className="mt-7 rounded-none bg-ink px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
                 >
                   Clear filters
                 </button>
@@ -302,7 +345,7 @@ function FilterGroup({
 }>) {
   return (
     <div className="border-b border-line py-5">
-      <h3 className="mb-3 text-xs font-bold tracking-[0.12em] text-muted uppercase">
+      <h3 className="mb-3 text-[0.62rem] font-semibold tracking-[0.2em] text-muted uppercase">
         {title}
       </h3>
       {children}
@@ -324,7 +367,7 @@ function FilterButton({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`min-h-10 rounded-lg border px-3 text-left text-sm font-semibold transition-colors ${
+      className={`min-h-10 rounded-none border px-3 text-left text-sm font-semibold transition-colors ${
         active
           ? "border-brand bg-brand-tint text-brand"
           : "border-line bg-white text-muted hover:border-brand hover:text-ink"

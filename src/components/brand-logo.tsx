@@ -3,7 +3,7 @@ const LOGO_URL = "/brand/logo.svg";
 /**
  * Official SVGH wordmark. The SVG is applied as a CSS mask so the mark
  * renders in the surrounding text color (dark on light surfaces, white on
- * the footer green). Size it with a height class; width follows the
+ * the black footer). Size it with a height class; width follows the
  * mark's intrinsic aspect ratio.
  */
 export function BrandLogo({ className }: { className?: string }) {

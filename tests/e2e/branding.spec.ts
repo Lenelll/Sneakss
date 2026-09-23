@@ -16,7 +16,7 @@ test("header shows the SVGH logo in the ink color", async ({ page }) => {
     };
   });
   expect(styles.mask).toContain("/brand/logo.svg");
-  expect(styles.color).toBe("rgb(12, 18, 48)");
+  expect(styles.color).toBe("rgb(0, 0, 0)");
 });
 
 test("footer shows the SVGH logo in white", async ({ page }) => {

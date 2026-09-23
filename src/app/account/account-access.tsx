@@ -30,7 +30,7 @@ export function AccountAccess({
     prefsStatus === "unchanged" || prefsStatus === "empty";
 
   return (
-    <div className="rounded-[1.5rem] border border-line bg-white p-6 shadow-[0_18px_50px_rgba(12,18,48,0.08)] sm:p-8">
+    <div className="rounded-none border border-line bg-white p-6 shadow-[0_18px_50px_rgba(12,18,48,0.08)] sm:p-8">
       <p className="text-xs font-semibold tracking-[0.16em] text-brand uppercase">
         Account access
       </p>
@@ -48,11 +48,11 @@ export function AccountAccess({
 
           {(preferencesSaved || preferencesError || noChanges) && (
             <p
-              className={`mt-5 rounded-xl border p-4 text-sm leading-6 ${
+              className={`mt-5 rounded-none border p-4 text-sm leading-6 ${
                 preferencesSaved
                   ? "border-brand/25 bg-brand-tint text-brand"
                   : preferencesError
-                    ? "border-accent/50 bg-[#FFF9E8] text-[#584814]"
+                    ? "border-line-strong bg-surface-2 text-ink-soft"
                     : "border-line bg-canvas text-muted"
               }`}
               role={preferencesError ? "alert" : "status"}
@@ -67,7 +67,7 @@ export function AccountAccess({
             </p>
           )}
 
-          <section className="mt-7 rounded-xl border border-line bg-canvas p-4">
+          <section className="mt-7 rounded-none border border-line bg-canvas p-4">
             <p className="text-sm font-semibold text-ink">
               Account preferences
             </p>
@@ -92,7 +92,7 @@ export function AccountAccess({
                 </label>
                 <input
                   autoComplete="given-name"
-                  className="mt-2 w-full rounded-xl border border-line-strong bg-white px-4 py-3 text-base text-ink transition placeholder:text-muted-soft hover:border-muted-soft focus:border-brand focus:outline-none"
+                  className="mt-2 w-full rounded-none border border-line-strong bg-white px-4 py-3 text-base text-ink transition placeholder:text-muted-soft hover:border-muted-soft focus:border-brand focus:outline-none"
                   defaultValue={customerFirstName ?? ""}
                   id="firstName"
                   maxLength={64}
@@ -111,7 +111,7 @@ export function AccountAccess({
                 </label>
                 <input
                   autoComplete="family-name"
-                  className="mt-2 w-full rounded-xl border border-line-strong bg-white px-4 py-3 text-base text-ink transition placeholder:text-muted-soft hover:border-muted-soft focus:border-brand focus:outline-none"
+                  className="mt-2 w-full rounded-none border border-line-strong bg-white px-4 py-3 text-base text-ink transition placeholder:text-muted-soft hover:border-muted-soft focus:border-brand focus:outline-none"
                   defaultValue={customerLastName ?? ""}
                   id="lastName"
                   maxLength={64}
@@ -122,7 +122,7 @@ export function AccountAccess({
               </div>
 
               <button
-                className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-dark"
+                className="rounded-none bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand"
                 type="submit"
               >
                 Save account preferences
@@ -131,14 +131,14 @@ export function AccountAccess({
           </section>
 
           <Link
-            className="mt-7 flex w-full items-center justify-center rounded-xl bg-brand px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
+            className="mt-7 flex w-full items-center justify-center rounded-none bg-ink px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-brand"
             href="/shop"
           >
             Continue shopping
           </Link>
           <form action="/account/auth/logout" className="mt-5" method="post">
             <button
-              className="w-full rounded-xl border border-line-strong px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink"
+              className="w-full rounded-none border border-line-strong px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink"
               type="submit"
             >
               Sign out
@@ -157,7 +157,7 @@ export function AccountAccess({
 
           {authError ? (
             <p
-              className="mt-5 rounded-xl border border-accent/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]"
+              className="mt-5 rounded-none border border-line-strong bg-surface-2 p-4 text-sm leading-6 text-ink-soft"
               role="alert"
             >
               Sign-in could not be completed. Please try again.
@@ -172,20 +172,20 @@ export function AccountAccess({
           {configured ? (
             <div className="mt-7 grid gap-3">
               <Link
-                className="flex w-full items-center justify-center rounded-xl bg-brand px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                className="flex w-full items-center justify-center rounded-none bg-ink px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                 href="/account/sign-up?returnTo=/"
               >
                 Create account
               </Link>
               <Link
-                className="flex w-full items-center justify-center rounded-xl border border-line-strong px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink"
+                className="flex w-full items-center justify-center rounded-none border border-line-strong px-5 py-3 text-sm font-semibold text-ink transition hover:border-ink"
                 href="/account/sign-in?returnTo=/"
               >
                 Sign in
               </Link>
             </div>
           ) : (
-            <div className="mt-7 rounded-xl border border-accent/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]">
+            <div className="mt-7 rounded-none border border-line-strong bg-surface-2 p-4 text-sm leading-6 text-ink-soft">
               Customer sign-in is waiting for the Shopify Customer Account
               client, callback URL, and session secret.
             </div>

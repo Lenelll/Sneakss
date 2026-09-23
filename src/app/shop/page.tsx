@@ -64,10 +64,10 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 
   return (
     <main className="min-h-screen bg-canvas text-ink">
-      <section className="border-b border-line px-5 py-12 sm:px-8 sm:py-16 lg:px-12">
+      <section className="border-b border-line px-5 py-14 sm:px-8 sm:py-20 lg:px-12">
         <div className="mx-auto max-w-[1440px]">
           <div className="mb-5 flex flex-wrap items-center gap-3">
-            <span className="rounded-full bg-accent px-3 py-1 text-[11px] font-bold tracking-[0.16em] text-ink uppercase">
+            <span className="bg-ink px-3 py-1.5 text-[0.62rem] font-semibold tracking-[0.2em] text-white uppercase">
               Sneaker collection
             </span>
             <span className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">
@@ -76,7 +76,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
                 : "Sneaker-ready EU sizing"}
             </span>
           </div>
-          <h1 className="max-w-4xl text-5xl leading-[0.94] font-semibold tracking-[-0.055em] sm:text-7xl lg:text-8xl">
+          <h1 className="display-type max-w-4xl">
             Find your next pair.
           </h1>
           <p className="mt-7 max-w-2xl text-base leading-7 text-muted sm:text-lg">

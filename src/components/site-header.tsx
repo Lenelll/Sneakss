@@ -54,54 +54,61 @@ export function SiteHeader() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-line bg-canvas/95 text-ink backdrop-blur">
-        <div className="bg-brand px-4 py-2 text-center text-[0.62rem] font-semibold tracking-[0.2em] text-white uppercase">
+        <div className="bg-ink px-4 py-2 text-center text-[0.6rem] font-medium tracking-[0.22em] text-white uppercase">
           EU sizing · Prices in Ghana cedis
         </div>
-        <div className="mx-auto flex h-[4.75rem] max-w-[90rem] items-center justify-between gap-5 px-4 sm:px-6 lg:px-10">
-          <button
-            type="button"
-            className="rounded-lg px-2 py-2 text-xs font-semibold tracking-[0.14em] uppercase lg:hidden"
-            aria-label="Open navigation menu"
-            onClick={() => setIsMenuOpen(true)}
-          >
-            Menu
-          </button>
+
+        {/*
+          Three-column bar: navigation left, wordmark centred, utilities
+          right — the quiet supply-house arrangement.
+        */}
+        <div className="mx-auto grid h-[4.5rem] max-w-[90rem] grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 lg:px-10">
+          <div className="flex items-center justify-start">
+            <button
+              type="button"
+              className="px-1 py-2 text-[0.68rem] font-semibold tracking-[0.16em] uppercase transition-colors hover:text-brand lg:hidden"
+              aria-label="Open navigation menu"
+              onClick={() => setIsMenuOpen(true)}
+            >
+              Menu
+            </button>
+
+            <nav
+              aria-label="Primary navigation"
+              className="hidden items-center gap-8 lg:flex"
+            >
+              {navItems.map((item) => {
+                const active = isActivePath(pathname, item.href);
+                return (
+                  <Link
+                    key={`${item.href}-${item.label}`}
+                    href={item.href}
+                    className={`border-b py-1 text-sm transition-colors ${
+                      active
+                        ? "border-ink text-ink"
+                        : "border-transparent text-muted hover:text-ink"
+                    }`}
+                    aria-current={active ? "page" : undefined}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
 
           <Link
             href="/"
             aria-label="Sneaker Vault GH home"
-            className="group flex shrink-0 items-center"
+            className="group flex shrink-0 items-center justify-center"
           >
-            <BrandLogo className="h-9 transition-colors group-hover:text-brand" />
+            <BrandLogo className="h-8 transition-colors group-hover:text-brand" />
           </Link>
 
-          <nav
-            aria-label="Primary navigation"
-            className="hidden items-center gap-8 lg:flex"
-          >
-            {navItems.map((item) => {
-              const active = isActivePath(pathname, item.href);
-              return (
-                <Link
-                  key={`${item.href}-${item.label}`}
-                  href={item.href}
-                  className={`border-b py-2 text-sm font-medium transition-colors ${
-                    active
-                      ? "border-brand text-brand"
-                      : "border-transparent text-ink hover:text-brand"
-                  }`}
-                  aria-current={active ? "page" : undefined}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-
-          <div className="flex items-center justify-end gap-1 sm:gap-2">
+          <div className="flex items-center justify-end gap-3 sm:gap-4">
             <form
               aria-label="Search the catalog"
-              className="relative flex flex-1 items-center sm:min-w-[18rem]"
+              className="relative hidden items-center border-b border-line-strong transition-colors focus-within:border-ink sm:flex sm:w-[13rem] lg:w-[16rem]"
               onSubmit={submitSearch}
             >
               <label htmlFor="desktop-search" className="sr-only">
@@ -110,29 +117,30 @@ export function SiteHeader() {
               <input
                 id="desktop-search"
                 autoComplete="off"
-                className="h-9 w-full rounded-lg border border-line bg-white px-3 pr-14 text-sm outline-none placeholder:text-muted-soft focus:border-brand focus:ring-2 focus:ring-brand/20"
+                className="h-9 w-full bg-transparent pr-14 text-sm outline-none placeholder:text-muted-soft"
                 name="q"
                 onChange={(event) => setSearchValue(event.target.value)}
-                placeholder="Search sneakers..."
+                placeholder="Search"
                 type="search"
                 value={searchValue}
               />
               <button
                 type="submit"
-                className="absolute right-1 top-1 h-7 rounded-md bg-brand px-3 text-xs font-semibold text-white transition hover:bg-brand-dark"
+                className="absolute right-0 text-[0.62rem] font-semibold tracking-[0.14em] text-muted uppercase transition-colors hover:text-brand"
               >
                 Search
               </button>
             </form>
+
             <Link
               href="/account"
-              className="hidden rounded-lg px-3 py-2 text-xs font-semibold tracking-[0.08em] uppercase transition-colors hover:bg-white sm:block"
+              className="hidden text-[0.68rem] font-semibold tracking-[0.14em] uppercase transition-colors hover:text-brand sm:block"
             >
               Account
             </Link>
             <button
               type="button"
-              className="rounded-lg bg-ink px-3 py-2 text-xs font-semibold tracking-[0.08em] text-white uppercase transition-colors hover:bg-brand"
+              className="bg-ink px-4 py-2.5 text-[0.68rem] font-semibold tracking-[0.14em] text-white uppercase transition-colors hover:bg-brand"
               aria-label={`Open bag with ${itemCount} ${itemCount === 1 ? "item" : "items"}`}
               onClick={openCart}
             >
@@ -142,7 +150,7 @@ export function SiteHeader() {
         </div>
       </header>
 
-      <div className="bg-brand px-4 py-2 sm:hidden">
+      <div className="border-b border-line bg-canvas px-4 py-2 sm:hidden">
         <form
           aria-label="Search the catalog"
           className="mx-auto flex max-w-3xl items-center gap-2"
@@ -154,7 +162,7 @@ export function SiteHeader() {
           <input
             id="mobile-search"
             autoComplete="off"
-            className="h-10 w-full rounded-lg border border-line bg-white px-3 text-sm outline-none placeholder:text-muted-soft focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="h-10 w-full border border-line-strong bg-white px-3 text-sm outline-none placeholder:text-muted-soft focus:border-ink"
             name="q"
             onChange={(event) => setSearchValue(event.target.value)}
             placeholder="Search sneakers..."
@@ -163,7 +171,7 @@ export function SiteHeader() {
           />
           <button
             type="submit"
-            className="rounded-lg bg-ink px-3 py-2 text-xs font-semibold uppercase text-white"
+            className="bg-ink px-4 py-2.5 text-[0.68rem] font-semibold tracking-[0.14em] text-white uppercase"
           >
             Search
           </button>
@@ -173,7 +181,7 @@ export function SiteHeader() {
       <dialog
         ref={menuDialogRef}
         aria-labelledby="menu-dialog-title"
-        className="m-0 h-dvh max-h-none w-[min(88vw,25rem)] max-w-none bg-brand p-0 text-white shadow-2xl backdrop:bg-ink/55"
+        className="m-0 h-dvh max-h-none w-[min(88vw,25rem)] max-w-none bg-ink p-0 text-white shadow-2xl backdrop:bg-black/55"
         onCancel={(event) => {
           event.preventDefault();
           setIsMenuOpen(false);
@@ -184,39 +192,36 @@ export function SiteHeader() {
           <div className="flex items-center justify-between">
             <p
               id="menu-dialog-title"
-              className="text-xs font-semibold tracking-[0.2em] text-white/65 uppercase"
+              className="text-[0.62rem] font-semibold tracking-[0.22em] text-white/55 uppercase"
             >
               Navigation
             </p>
             <button
               type="button"
-              className="rounded-full border border-white/30 px-4 py-2 text-xs font-semibold tracking-[0.1em] uppercase"
+              className="border border-white/30 px-4 py-2 text-[0.62rem] font-semibold tracking-[0.14em] uppercase transition-colors hover:bg-white hover:text-ink"
               onClick={() => setIsMenuOpen(false)}
             >
               Close
             </button>
           </div>
-          <nav
-            aria-label="Mobile navigation"
-            className="mt-16 flex flex-col"
-          >
+          <nav aria-label="Mobile navigation" className="mt-14 flex flex-col">
             {[...navItems, { href: "/account", label: "Account" }].map(
               (item, index) => (
                 <Link
                   key={`${item.href}-${item.label}`}
                   href={item.href}
                   onClick={() => setIsMenuOpen(false)}
-                  className="flex items-baseline justify-between border-b border-white/20 py-5 text-3xl font-semibold tracking-[-0.045em]"
+                  className="flex items-baseline justify-between border-b border-white/20 py-5 text-3xl font-light tracking-[-0.03em] transition-colors hover:text-white/70"
                 >
                   <span>{item.label}</span>
-                  <span className="text-xs font-medium tracking-[0.15em] text-accent">
+                  <span className="text-[0.62rem] font-semibold tracking-[0.18em] text-white/45">
                     0{index + 1}
                   </span>
                 </Link>
               ),
             )}
           </nav>
-          <p className="mt-auto max-w-xs pt-10 text-sm leading-6 text-white/65">
+          <p className="mt-auto max-w-xs pt-10 text-sm leading-6 text-white/60">
             Ghana&apos;s considered edit of everyday, court and performance
             sneakers.
           </p>

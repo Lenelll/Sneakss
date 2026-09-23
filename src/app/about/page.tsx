@@ -37,7 +37,7 @@ export default function AboutPage() {
             <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-muted">
               About Sneaker Vault GH
             </p>
-            <h1 className="max-w-4xl text-5xl font-medium leading-[0.98] tracking-[-0.05em] sm:text-6xl lg:text-8xl">
+            <h1 className="display-type max-w-4xl">
               Great pairs, thoughtfully selected.
             </h1>
           </div>
@@ -49,7 +49,7 @@ export default function AboutPage() {
 
         <aside
           aria-label="Draft content notice"
-          className="my-10 border-l-4 border-accent bg-white px-5 py-4 text-sm leading-6 text-muted sm:px-6"
+          className="my-10 border-l-2 border-ink bg-surface-2 px-5 py-4 text-sm leading-6 text-muted sm:px-6"
         >
           <span className="font-semibold text-ink">Draft content.</span>{" "}
           This brand story is placeholder copy and must be reviewed by the
@@ -85,7 +85,7 @@ export default function AboutPage() {
               </p>
               <h2
                 id="principles-heading"
-                className="text-3xl font-medium tracking-[-0.04em] sm:text-4xl"
+                className="section-title"
               >
                 Built around the essentials.
               </h2>
@@ -117,7 +117,7 @@ export default function AboutPage() {
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-muted-soft">
               Need to know more?
             </p>
-            <h2 className="max-w-2xl text-3xl font-medium tracking-[-0.04em] sm:text-4xl">
+            <h2 className="max-w-2xl section-title">
               Talk to the Sneaker Vault GH team.
             </h2>
           </div>

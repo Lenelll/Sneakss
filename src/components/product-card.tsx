@@ -23,7 +23,7 @@ export function ProductCard({
     (variant) => variant.availableForSale,
   );
   const isSoldOut = availableVariants.length === 0;
-  const visibleSizes = availableVariants.slice(0, 4);
+  const visibleSizes = availableVariants.slice(0, 6);
   const remainingSizes = availableVariants.length - visibleSizes.length;
   const lowStock =
     !isSoldOut &&
@@ -31,12 +31,17 @@ export function ProductCard({
       (total, variant) => total + variant.inventoryQuantity,
       0,
     ) <= 4;
+  const colorCount = product.colors.length;
 
   return (
     <article className={`group min-w-0 ${className}`}>
+      {/*
+        Image tile: flat grey field, square corners, no border. The whole
+        tile is the hit target, matching a dense catalogue grid.
+      */}
       <Link
         href={`/products/${product.handle}`}
-        className="relative block aspect-[4/4.65] overflow-hidden rounded-lg border border-line bg-surface-2 transition-shadow duration-300 group-hover:shadow-[0_24px_50px_-28px_rgba(39,80,214,0.45)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+        className="relative block aspect-square overflow-hidden bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
       >
         <Image
           src={product.images[0].src}
@@ -44,78 +49,85 @@ export function ProductCard({
           fill
           priority={priority}
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover transition duration-500 ease-out group-hover:scale-[1.035]"
+          className={`object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04] ${
+            isSoldOut ? "opacity-60" : ""
+          }`}
         />
-        <div className="absolute inset-x-3 top-3 flex items-start justify-between gap-2">
-          {product.isDemo ? (
-            <span className="rounded-full bg-white/92 px-3 py-1.5 text-[0.6rem] font-semibold tracking-[0.14em] text-muted uppercase shadow-sm backdrop-blur">
-              Demo
-            </span>
-          ) : (
-            <span aria-hidden="true" />
-          )}
-          <span className="flex flex-col items-end gap-1.5">
-            {isSoldOut ? (
-              <span className="rounded-full bg-ink px-3 py-1.5 text-[0.6rem] font-bold tracking-[0.14em] text-white uppercase">
-                Sold out
+
+        {/* Flag rail: plain uppercase labels, no pills. */}
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
+          <span className="flex flex-col items-start gap-1">
+            {product.isDemo ? (
+              <span className="bg-white px-2 py-1 text-[0.58rem] font-semibold tracking-[0.16em] text-muted uppercase">
+                Demo
               </span>
-            ) : lowStock ? (
-              <span className="rounded-full bg-white/92 px-3 py-1.5 text-[0.6rem] font-bold tracking-[0.14em] text-brand uppercase shadow-sm backdrop-blur">
+            ) : null}
+            {!isSoldOut && lowStock ? (
+              <span className="bg-ink px-2 py-1 text-[0.58rem] font-semibold tracking-[0.16em] text-white uppercase">
                 Low stock
               </span>
             ) : null}
           </span>
+          {isSoldOut ? (
+            <span className="bg-ink px-2 py-1 text-[0.58rem] font-semibold tracking-[0.16em] text-white uppercase">
+              Sold out
+            </span>
+          ) : null}
         </div>
-        <div className="absolute inset-x-3 bottom-3 translate-y-2 rounded-xl bg-ink/88 px-3 py-2.5 text-white opacity-0 backdrop-blur transition duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100">
-          <p className="truncate text-[0.65rem] font-medium tracking-[0.05em]">
-            {isSoldOut
-              ? "SOLD OUT"
-              : `EU ${visibleSizes.map((variant) => variant.size).join(" · ")}${
-                  remainingSizes > 0 ? ` · +${remainingSizes} more` : ""
-                }`}
-          </p>
-        </div>
+
+        {/* Size rail slides up on hover — the quick-scan detail when browsing. */}
+        {!isSoldOut ? (
+          <div className="absolute inset-x-0 bottom-0 translate-y-full bg-white/95 px-3 py-2.5 backdrop-blur transition-transform duration-300 ease-out group-hover:translate-y-0 group-focus-within:translate-y-0">
+            <p className="truncate text-[0.62rem] font-semibold tracking-[0.12em] text-ink uppercase">
+              EU {visibleSizes.map((variant) => variant.size).join("  ")}
+              {remainingSizes > 0 ? `  +${remainingSizes}` : ""}
+            </p>
+          </div>
+        ) : null}
       </Link>
 
-      <div className="pt-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="truncate text-[0.64rem] font-semibold tracking-[0.16em] text-muted uppercase">
-              {product.brand}
-            </p>
-            <h3 className="mt-1 truncate text-base font-semibold tracking-[-0.025em] text-ink">
-              <Link
-                href={`/products/${product.handle}`}
-                className="transition-colors hover:text-brand"
-              >
-                {product.title}
-              </Link>
-            </h3>
-            <p className="mt-1 truncate text-xs text-muted">
-              {product.colorway}
-            </p>
-          </div>
-          <p className="shrink-0 text-sm font-semibold text-ink">
-            {formatGHS(product.price)}
-          </p>
-        </div>
-        <div className="mt-3 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5">
-            {product.colors.map((color) => (
-              <span
-                key={color.name}
-                aria-label={color.name}
-                title={color.name}
-                className="h-3 w-3 rounded-full border border-black/12"
-                style={{ backgroundColor: color.hex }}
-              />
-            ))}
-            <span className="ml-1 text-[0.65rem] text-muted-soft">
-              {product.category}
+      {/* Information block: price leads, then name, then metadata. */}
+      <div className="pt-3">
+        <p className="truncate text-[0.6rem] font-semibold tracking-[0.18em] text-muted uppercase">
+          {product.brand}
+        </p>
+        <p className="mt-1.5 text-[0.95rem] font-semibold tracking-[-0.01em] text-ink">
+          {formatGHS(product.price)}
+        </p>
+        <h3 className="mt-0.5 truncate text-sm leading-6 font-normal text-ink">
+          <Link
+            href={`/products/${product.handle}`}
+            className="transition-colors hover:text-brand"
+          >
+            {product.title}
+          </Link>
+        </h3>
+        <p className="truncate text-sm leading-6 text-muted">
+          {product.category}
+        </p>
+
+        <div className="mt-2 flex min-h-5 items-center justify-between gap-3">
+          {colorCount > 0 ? (
+            <span className="flex items-center gap-1.5">
+              {product.colors.map((color) => (
+                <span
+                  key={color.name}
+                  aria-label={color.name}
+                  title={color.name}
+                  className="h-3 w-3 rounded-full border border-black/15"
+                  style={{ backgroundColor: color.hex }}
+                />
+              ))}
+              <span className="text-[0.7rem] text-muted-soft">
+                {colorCount} {colorCount === 1 ? "colour" : "colours"}
+              </span>
             </span>
-          </div>
+          ) : (
+            <span />
+          )}
+
           {rating && rating.count > 0 ? (
-            <span className="flex items-center gap-1.5 text-[0.7rem] font-semibold text-ink">
+            <span className="flex shrink-0 items-center gap-1.5 text-[0.7rem] text-muted">
               <RatingStars
                 value={rating.average}
                 size="sm"
@@ -123,12 +135,7 @@ export function ProductCard({
                   rating.count === 1 ? "review" : "reviews"
                 }`}
               />
-              <span aria-hidden="true">
-                {rating.average.toFixed(1)}{" "}
-                <span className="font-normal text-muted-soft">
-                  ({rating.count})
-                </span>
-              </span>
+              <span aria-hidden="true">({rating.count})</span>
             </span>
           ) : null}
         </div>

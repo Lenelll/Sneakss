@@ -143,15 +143,15 @@ export function ProductReviews({
             </p>
             <h2
               id="reviews-heading"
-              className="mt-2 text-3xl font-semibold tracking-[-0.045em] sm:text-5xl"
+              className="mt-2 section-title"
             >
               {summary.count > 0 ? "Worn and rated." : "Be the first to review."}
             </h2>
 
             {summary.count > 0 ? (
-              <div className="mt-7 rounded-[1.5rem] border border-line bg-white p-6">
+              <div className="mt-7 rounded-none border border-line bg-white p-6">
                 <div className="flex flex-wrap items-end gap-5">
-                  <p className="text-6xl leading-none font-semibold tracking-[-0.05em]">
+                  <p className="text-6xl leading-none font-light tracking-[-0.03em]">
                     {summary.average.toFixed(1)}
                   </p>
                   <div className="pb-1">
@@ -183,11 +183,11 @@ export function ProductReviews({
                       >
                         <span className="flex items-center gap-1 text-muted">
                           {stars}
-                          <StarIcon className="h-3 w-3 text-accent-dark" />
+                          <StarIcon className="h-3 w-3 text-brand" />
                         </span>
                         <span className="h-2 overflow-hidden rounded-full bg-surface-2">
                           <span
-                            className="block h-full rounded-full bg-accent"
+                            className="block h-full rounded-full bg-ink"
                             style={{ width: `${percent}%` }}
                           />
                         </span>
@@ -224,11 +224,11 @@ export function ProductReviews({
                   <button
                     type="button"
                     onClick={openForm}
-                    className="inline-flex min-h-12 items-center justify-center rounded-xl bg-brand px-6 text-sm font-bold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+                    className="inline-flex min-h-12 items-center justify-center rounded-none bg-ink px-6 text-sm font-bold text-white transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
                   >
                     Write a review
                   </button>
-                  <span className="inline-flex items-center gap-2 rounded-full bg-accent-tint px-3 py-1.5 text-xs font-semibold text-accent-dark">
+                  <span className="inline-flex items-center gap-2 rounded-full bg-brand-tint px-3 py-1.5 text-xs font-semibold text-brand">
                     <CheckIcon />
                     Posting as {reviewer.displayName}
                   </span>
@@ -237,7 +237,7 @@ export function ProductReviews({
                 <>
                   <Link
                     href={signInHref}
-                    className="inline-flex min-h-12 items-center justify-center rounded-xl bg-brand px-6 text-sm font-bold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+                    className="inline-flex min-h-12 items-center justify-center rounded-none bg-ink px-6 text-sm font-bold text-white transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
                   >
                     Sign in to write a review
                   </Link>
@@ -251,7 +251,7 @@ export function ProductReviews({
             {storageWarning ? (
               <p
                 role="status"
-                className="mt-5 rounded-xl border border-accent/50 bg-[#FFF9E8] p-4 text-xs leading-5 text-[#584814]"
+                className="mt-5 rounded-none border border-line-strong bg-surface-2 p-4 text-xs leading-5 text-ink-soft"
               >
                 Review storage is not configured on this deployment yet, so
                 reviews posted now will not be kept. Set the review store
@@ -288,7 +288,7 @@ export function ProductReviews({
                         type="button"
                         onClick={() => openLightbox(allPhotos, index)}
                         aria-label={`Open customer photo ${index + 1} of ${allPhotos.length}`}
-                        className="relative block aspect-square w-24 overflow-hidden rounded-xl border border-line bg-surface-2 transition hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:w-28"
+                        className="relative block aspect-square w-24 overflow-hidden rounded-none border border-line bg-surface-2 transition hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:w-28"
                       >
                         <Image
                           src={reviewPhotoUrl(item.photoId)}
@@ -339,7 +339,7 @@ export function ProductReviews({
               {visibleReviews.map((review) => (
                 <li
                   key={review.id}
-                  className="rounded-[1.5rem] border border-line bg-white p-6"
+                  className="rounded-none border border-line bg-white p-6"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
@@ -375,7 +375,7 @@ export function ProductReviews({
                               type="button"
                               onClick={() => openLightbox(items, index)}
                               aria-label={`Open photo ${index + 1} from ${review.authorName}`}
-                              className="relative block aspect-square w-20 overflow-hidden rounded-xl border border-line bg-surface-2 transition hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                              className="relative block aspect-square w-20 overflow-hidden rounded-none border border-line bg-surface-2 transition hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                             >
                               <Image
                                 src={reviewPhotoUrl(photo.id)}
@@ -397,7 +397,7 @@ export function ProductReviews({
                       {review.authorName}
                     </p>
                     {review.verified ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-accent-tint px-2.5 py-1 font-semibold text-accent-dark">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-tint px-2.5 py-1 font-semibold text-brand">
                         <CheckIcon />
                         Verified account
                       </span>
@@ -418,13 +418,13 @@ export function ProductReviews({
             </ul>
 
             {reviews.length > 0 && visibleReviews.length === 0 ? (
-              <p className="mt-5 rounded-2xl border border-line bg-white p-6 text-sm text-muted">
+              <p className="mt-5 rounded-none border border-line bg-white p-6 text-sm text-muted">
                 No reviews with photos yet.
               </p>
             ) : null}
 
             {reviews.length === 0 && !isFormOpen ? (
-              <div className="rounded-[1.5rem] border border-dashed border-line-strong bg-white/60 p-8 text-center">
+              <div className="rounded-none border border-dashed border-line-strong bg-white/60 p-8 text-center">
                 <p className="text-sm font-semibold">No reviews yet</p>
                 <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-muted">
                   Bought this pair? Your review helps other customers pick the
@@ -434,14 +434,14 @@ export function ProductReviews({
                   <button
                     type="button"
                     onClick={openForm}
-                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl border border-brand px-5 text-sm font-bold text-brand transition-colors hover:bg-brand hover:text-white"
+                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-none border border-brand px-5 text-sm font-bold text-brand transition-colors hover:bg-brand hover:text-white"
                   >
                     Write the first review
                   </button>
                 ) : (
                   <Link
                     href={signInHref}
-                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl border border-brand px-5 text-sm font-bold text-brand transition-colors hover:bg-brand hover:text-white"
+                    className="mt-5 inline-flex min-h-11 items-center justify-center rounded-none border border-brand px-5 text-sm font-bold text-brand transition-colors hover:bg-brand hover:text-white"
                   >
                     Sign in to write the first review
                   </Link>
@@ -610,7 +610,7 @@ function ReviewForm({
     <form
       onSubmit={handleSubmit}
       aria-labelledby={`${baseId}-title`}
-      className="rounded-[1.5rem] border border-brand/30 bg-white p-6 shadow-[0_24px_60px_-40px_rgba(39,80,214,0.5)] sm:p-8"
+      className="rounded-none border border-brand/30 bg-white p-6 shadow-[0_24px_60px_-40px_rgba(39,80,214,0.5)] sm:p-8"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -662,11 +662,11 @@ function ReviewForm({
                 onMouseEnter={() => setHoverRating(value)}
                 onFocus={() => setHoverRating(value)}
                 onBlur={() => setHoverRating(0)}
-                className="h-10 w-10 rounded-lg p-1 transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                className="h-10 w-10 rounded-none p-1 transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
                 <StarIcon
                   className={
-                    value <= displayRating ? "text-accent-dark" : "text-line-strong"
+                    value <= displayRating ? "text-brand" : "text-line-strong"
                   }
                 />
               </button>
@@ -687,7 +687,7 @@ function ReviewForm({
             minLength={REVIEW_LIMITS.titleMin}
             maxLength={REVIEW_LIMITS.titleMax}
             placeholder="Sum it up in a few words"
-            className="mt-2 h-12 w-full rounded-xl border border-line-strong bg-white px-4 text-base outline-none placeholder:text-muted-soft focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="mt-2 h-12 w-full rounded-none border border-line-strong bg-white px-4 text-base outline-none placeholder:text-muted-soft focus:border-brand focus:ring-2 focus:ring-brand/20"
           />
         </label>
 
@@ -700,7 +700,7 @@ function ReviewForm({
             maxLength={REVIEW_LIMITS.bodyMax}
             rows={5}
             placeholder="How does it fit? How does it feel after a few wears?"
-            className="mt-2 w-full rounded-xl border border-line-strong bg-white px-4 py-3 text-base leading-6 outline-none placeholder:text-muted-soft focus:border-brand focus:ring-2 focus:ring-brand/20"
+            className="mt-2 w-full rounded-none border border-line-strong bg-white px-4 py-3 text-base leading-6 outline-none placeholder:text-muted-soft focus:border-brand focus:ring-2 focus:ring-brand/20"
           />
         </label>
 
@@ -716,7 +716,7 @@ function ReviewForm({
                 type="button"
                 aria-pressed={fit === value}
                 onClick={() => setFit((current) => (current === value ? "" : value))}
-                className={`min-h-11 rounded-xl border px-2 text-xs font-bold transition-colors sm:text-sm ${
+                className={`min-h-11 rounded-none border px-2 text-xs font-bold transition-colors sm:text-sm ${
                   fit === value
                     ? "border-brand bg-brand-tint text-brand"
                     : "border-line-strong bg-white text-muted hover:border-brand hover:text-ink"
@@ -739,7 +739,7 @@ function ReviewForm({
             {photos.map((photo) => (
               <div
                 key={photo.id}
-                className="relative aspect-square w-24 overflow-hidden rounded-xl border border-line bg-surface-2"
+                className="relative aspect-square w-24 overflow-hidden rounded-none border border-line bg-surface-2"
               >
                 <Image
                   src={photo.previewUrl}
@@ -760,7 +760,7 @@ function ReviewForm({
               </div>
             ))}
             {photos.length < REVIEW_LIMITS.maxPhotos ? (
-              <label className="flex aspect-square w-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-line-strong bg-canvas text-center text-[0.7rem] font-semibold text-muted transition hover:border-brand hover:text-brand focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand">
+              <label className="flex aspect-square w-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-none border border-dashed border-line-strong bg-canvas text-center text-[0.7rem] font-semibold text-muted transition hover:border-brand hover:text-brand focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-brand">
                 <span aria-hidden="true" className="text-2xl leading-none">
                   +
                 </span>
@@ -785,7 +785,7 @@ function ReviewForm({
       </div>
 
       {error ? (
-        <p role="alert" className="mt-5 rounded-xl border border-error/30 bg-[#fff2f0] px-4 py-3 text-sm font-semibold text-error">
+        <p role="alert" className="mt-5 rounded-none border border-error/30 bg-[#fff2f0] px-4 py-3 text-sm font-semibold text-error">
           {error}
         </p>
       ) : null}
@@ -794,7 +794,7 @@ function ReviewForm({
         <button
           type="submit"
           disabled={isSubmitting || isPreparing}
-          className="inline-flex min-h-12 items-center justify-center rounded-xl bg-brand px-6 text-sm font-bold text-white transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-muted-soft"
+          className="inline-flex min-h-12 items-center justify-center rounded-none bg-ink px-6 text-sm font-bold text-white transition-colors hover:bg-brand disabled:cursor-not-allowed disabled:bg-muted-soft"
         >
           {isSubmitting ? "Posting…" : "Post review"}
         </button>
@@ -852,7 +852,7 @@ function PhotoLightbox({
     <dialog
       ref={dialogRef}
       aria-label="Customer photo"
-      className="m-auto w-[min(96vw,64rem)] max-w-none rounded-[1.5rem] bg-ink p-0 text-white shadow-2xl backdrop:bg-ink/80"
+      className="m-auto w-[min(96vw,64rem)] max-w-none rounded-none bg-ink p-0 text-white shadow-2xl backdrop:bg-ink/80"
       onCancel={(event) => {
         event.preventDefault();
         onClose();

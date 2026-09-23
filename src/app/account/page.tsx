@@ -93,7 +93,7 @@ export default async function AccountPage({
           <p className="text-xs font-semibold tracking-[0.18em] text-brand uppercase">
             Your vault
           </p>
-          <h1 className="mt-4 text-5xl font-semibold tracking-[-0.055em] text-balance sm:text-6xl lg:text-7xl">
+          <h1 className="mt-4 display-type text-balance">
             One account for every pair.
           </h1>
           <p className="mt-6 max-w-xl text-base leading-7 text-muted sm:text-lg">
@@ -109,7 +109,7 @@ export default async function AccountPage({
               ["03", "Shop with your account"],
             ].map(([number, label]) => (
               <li
-                className="rounded-2xl border border-line bg-white/60 p-4"
+                className="rounded-none border border-line bg-white/60 p-4"
                 key={number}
               >
                 <span className="text-xs font-semibold text-brand">
@@ -122,7 +122,7 @@ export default async function AccountPage({
 
           <div className="mt-8 flex flex-wrap items-center gap-4 text-sm">
             <Link
-              className="font-semibold text-brand underline decoration-accent decoration-2 underline-offset-4"
+              className="font-semibold text-brand underline decoration-brand decoration-2 underline-offset-4"
               href="/shop"
             >
               Continue shopping

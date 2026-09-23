@@ -53,7 +53,7 @@ export default function ShippingPolicyPage() {
           <p className="mb-5 text-xs font-semibold uppercase tracking-[0.24em] text-muted">
             Customer care
           </p>
-          <h1 className="text-5xl font-medium leading-none tracking-[-0.05em] sm:text-6xl">
+          <h1 className="display-type">
             Shipping policy
           </h1>
           <p className="mt-5 text-sm text-muted">
@@ -63,7 +63,7 @@ export default function ShippingPolicyPage() {
 
         <aside
           aria-label="Draft policy notice"
-          className="my-8 border-l-4 border-accent bg-white px-5 py-4 text-sm leading-6 text-muted sm:px-6"
+          className="my-8 border-l-2 border-ink bg-surface-2 px-5 py-4 text-sm leading-6 text-muted sm:px-6"
         >
           <span className="font-semibold text-ink">Draft content.</span>{" "}
           This policy contains operational placeholders and is not ready for

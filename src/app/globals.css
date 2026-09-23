@@ -1,25 +1,43 @@
 @import "tailwindcss";
 
 :root {
-  /* Brand palette */
-  --canvas: #fafffb;
+  /*
+   * Monochrome-first palette.
+   * White and black carry the interface; blue is the single accent used for
+   * links, selected states and focus. No green anywhere.
+   */
+  --canvas: #ffffff;
   --surface: #ffffff;
-  --surface-2: #f1f5f8;
-  --ink: #0c1230;
-  --ink-soft: #232b4d;
-  --muted: #5c6482;
-  --muted-soft: #8a91a8;
-  --line: #dfe4ef;
-  --line-strong: #c6cee0;
-  --brand: #2750d6;
-  --brand-dark: #1c3fb0;
-  --brand-deep: #14307f;
-  --brand-tint: #e8edfb;
-  --accent: #27d655;
-  --accent-dark: #128234;
-  --accent-tint: #e4fbea;
+  --surface-2: #f2f2f2;
+  --surface-3: #e8e8e8;
+  --ink: #000000;
+  --ink-soft: #1c1c1c;
+  --muted: #6a6a6a;
+  --muted-soft: #9b9b9b;
+  --line: #e5e5e5;
+  --line-strong: #c9c9c9;
+
+  /* Blue accent — complementary only. */
+  --brand: #1d4ed8;
+  --brand-dark: #1739a8;
+  --brand-deep: #0f2570;
+  --brand-tint: #eef2ff;
+
+  /*
+   * `accent` aliases the blue so any legacy token usage stays on palette.
+   */
+  --accent: var(--brand);
+  --accent-dark: var(--brand-dark);
+  --accent-tint: var(--brand-tint);
+
+  /* Neutral callout, replaces the old amber/green notice treatment. */
+  --notice-bg: #f5f5f5;
+  --notice-line: #d4d4d4;
+  --notice-ink: #2b2b2b;
+
   --error: #b42318;
-  --font-ui: "Segoe UI", Arial, Helvetica, sans-serif;
+  --font-ui: "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue",
+    Arial, sans-serif;
   --font-code: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
   --background: var(--canvas);
   --foreground: var(--ink);
@@ -31,6 +49,7 @@
   --color-canvas: var(--canvas);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-muted: var(--muted);
@@ -44,6 +63,9 @@
   --color-accent: var(--accent);
   --color-accent-dark: var(--accent-dark);
   --color-accent-tint: var(--accent-tint);
+  --color-notice-bg: var(--notice-bg);
+  --color-notice-line: var(--notice-line);
+  --color-notice-ink: var(--notice-ink);
   --color-error: var(--error);
   --font-sans: var(--font-ui);
   --font-mono: var(--font-code);
@@ -64,11 +86,12 @@ body {
   margin: 0;
   min-width: 320px;
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: var(--accent);
-  color: var(--ink);
+  background: var(--ink);
+  color: #ffffff;
 }
 
 a,
@@ -99,45 +122,117 @@ button:disabled {
   padding-inline: clamp(1.25rem, 4vw, 4rem);
 }
 
+/*
+ * Editorial type scale: large, light and quiet. Weight does the talking
+ * through size and space rather than heaviness.
+ */
 .display-type {
-  font-size: clamp(3rem, 8vw, 7.5rem);
-  font-weight: 600;
-  letter-spacing: -0.06em;
-  line-height: 0.9;
+  font-size: clamp(2.75rem, 7vw, 6rem);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
 }
 
 .section-title {
-  font-size: clamp(2rem, 4vw, 4.25rem);
-  font-weight: 600;
-  letter-spacing: -0.045em;
-  line-height: 0.98;
+  font-size: clamp(1.75rem, 3.2vw, 3rem);
+  font-weight: 300;
+  letter-spacing: -0.025em;
+  line-height: 1.08;
 }
 
 .eyebrow {
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
   line-height: 1.4;
   text-transform: uppercase;
 }
 
-/* Hero backdrop: deep ink with a blue glow and a green spark. */
-.hero-panel {
+/* Section label used above quiet, left-aligned headings. */
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/*
+ * Buttons. Primary is solid black; the accent lives in the hover and in
+ * the outline variants.
+ */
+.btn {
+  align-items: center;
+  border: 1px solid transparent;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 600;
+  justify-content: center;
+  letter-spacing: 0.12em;
+  min-height: 3.25rem;
+  padding-inline: 2rem;
+  text-transform: uppercase;
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease;
+}
+
+.btn-solid {
+  background: var(--ink);
+  color: #ffffff;
+}
+
+.btn-solid:hover {
+  background: var(--brand);
+}
+
+.btn-outline {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.btn-outline:hover {
+  background: var(--ink);
+  color: #ffffff;
+}
+
+/* On dark or photographic backgrounds. */
+.btn-ghost-light {
+  border-color: rgba(255, 255, 255, 0.75);
+  color: #ffffff;
+}
+
+.btn-ghost-light:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--ink);
+}
+
+/*
+ * Full-bleed hero. A single photograph carries the section; a flat scrim
+ * keeps the type legible without tinting the image.
+ */
+.hero-media {
+  position: relative;
+  isolation: isolate;
+}
+
+.hero-scrim {
   background:
-    radial-gradient(60rem 30rem at 85% 10%, rgba(39, 80, 214, 0.55), transparent 60%),
-    radial-gradient(30rem 20rem at 5% 95%, rgba(39, 214, 85, 0.28), transparent 60%),
-    linear-gradient(135deg, #0c1230 0%, #14307f 100%);
+    radial-gradient(
+      70% 60% at 50% 52%,
+      rgba(0, 0, 0, 0.62) 0%,
+      rgba(0, 0, 0, 0.3) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.55) 0%,
+      rgba(0, 0, 0, 0.35) 45%,
+      rgba(0, 0, 0, 0.6) 100%
+    );
 }
 
-.hero-grid {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-  background-size: 3rem 3rem;
-  mask-image: radial-gradient(ellipse at 50% 40%, black 30%, transparent 75%);
-}
-
-/* Thin ticker used under the hero. */
+/* Thin marquee strip under the hero. */
 @keyframes ticker {
   from {
     transform: translateX(0);
@@ -156,7 +251,7 @@ button:disabled {
 
 @media (prefers-reduced-motion: no-preference) {
   .ticker-track {
-    animation: ticker 36s linear infinite;
+    animation: ticker 44s linear infinite;
   }
 
   .reveal-up {
@@ -170,32 +265,17 @@ button:disabled {
   .reveal-up-late {
     animation: reveal-up 800ms 260ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
   }
-
-  .float-slow {
-    animation: float 7s ease-in-out infinite;
-  }
 }
 
 @keyframes reveal-up {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translateY(14px);
   }
 
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-10px);
   }
 }
 

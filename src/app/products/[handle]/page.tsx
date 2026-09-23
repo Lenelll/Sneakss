@@ -186,7 +186,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 <p className="text-xs font-bold tracking-[0.16em] text-brand uppercase">
                   Keep exploring
                 </p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.045em] sm:text-5xl">
+                <h2 className="mt-2 section-title">
                   Similar pairs
                 </h2>
               </div>

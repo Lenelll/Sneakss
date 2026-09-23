@@ -146,7 +146,7 @@ export function ProductDetail({
             )}
           </div>
 
-          <h1 className="mt-3 text-4xl leading-[0.98] font-semibold tracking-[-0.05em] sm:text-6xl">
+          <h1 className="mt-3 display-type">
             {product.title}
           </h1>
           <p className="mt-3 text-sm text-muted">{product.colorway}</p>
@@ -161,7 +161,7 @@ export function ProductDetail({
                   ? "text-error"
                   : selectedVariant && selectedVariant.inventoryQuantity <= 3
                     ? "text-brand"
-                    : "text-accent-dark"
+                    : "text-brand"
               }`}
             >
               {stockLine}
@@ -203,7 +203,7 @@ export function ProductDetail({
                         : ", sold out"
                     }`}
                     onClick={() => selectVariant(variant.id)}
-                    className={`relative flex min-h-13 flex-col items-center justify-center rounded-xl border text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+                    className={`relative flex min-h-13 flex-col items-center justify-center rounded-none border text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
                       isSelected
                         ? "border-brand bg-brand text-white"
                         : variant.availableForSale
@@ -229,7 +229,7 @@ export function ProductDetail({
 
             <div className="mt-5 grid grid-cols-[7.5rem_1fr] gap-3">
               <div
-                className="flex h-14 items-center justify-between rounded-xl border border-line-strong bg-white px-1"
+                className="flex h-14 items-center justify-between rounded-none border border-line-strong bg-white px-1"
                 aria-label="Quantity"
               >
                 <button
@@ -237,7 +237,7 @@ export function ProductDetail({
                   aria-label="Decrease quantity"
                   disabled={boundedQuantity <= 1 || isSoldOut}
                   onClick={() => setQuantity((current) => Math.max(1, current - 1))}
-                  className="h-11 w-10 rounded-lg text-lg transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="h-11 w-10 rounded-none text-lg transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   −
                 </button>
@@ -251,7 +251,7 @@ export function ProductDetail({
                   onClick={() =>
                     setQuantity((current) => Math.min(maxQuantity, current + 1))
                   }
-                  className="h-11 w-10 rounded-lg text-lg transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="h-11 w-10 rounded-none text-lg transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   +
                 </button>
@@ -260,7 +260,7 @@ export function ProductDetail({
                 type="button"
                 disabled={!selectedVariant?.availableForSale || isAdding}
                 onClick={handleAddToBag}
-                className="min-h-14 rounded-xl bg-brand px-6 text-sm font-bold text-white transition-colors hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-muted-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+                className="min-h-14 rounded-none bg-ink px-6 text-sm font-bold text-white transition-colors hover:bg-brand disabled:cursor-not-allowed disabled:bg-muted-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
               >
                 {isAdding
                   ? "Adding…"
@@ -275,14 +275,14 @@ export function ProductDetail({
             <p
               aria-live="polite"
               className={`min-h-6 pt-3 text-center text-sm font-semibold ${
-                message ? "text-accent-dark" : "text-transparent"
+                message ? "text-brand" : "text-transparent"
               }`}
             >
               {message || "No update"}
             </p>
 
             {isSoldOut ? (
-              <p className="rounded-xl border border-line bg-white p-4 text-sm leading-6 text-muted">
+              <p className="rounded-none border border-line bg-white p-4 text-sm leading-6 text-muted">
                 This pair is currently sold out.{" "}
                 <Link href="/contact" className="font-semibold text-brand underline underline-offset-4">
                   Ask us about a restock
@@ -300,7 +300,7 @@ export function ProductDetail({
             ].map(([title, copy]) => (
               <li
                 key={title}
-                className="rounded-xl border border-line bg-white px-3.5 py-3"
+                className="rounded-none border border-line bg-white px-3.5 py-3"
               >
                 <p className="text-xs font-bold">{title}</p>
                 <p className="mt-0.5 text-[0.7rem] leading-4 text-muted">{copy}</p>
@@ -308,7 +308,7 @@ export function ProductDetail({
             ))}
           </ul>
 
-          <div className="mt-5 overflow-hidden rounded-2xl border border-line bg-white">
+          <div className="mt-5 overflow-hidden rounded-none border border-line bg-white">
             <details className="group border-b border-line px-5 py-4" open>
               <summary className="flex cursor-pointer list-none items-center justify-between text-sm font-bold">
                 Details
@@ -350,7 +350,7 @@ export function ProductDetail({
               </summary>
               <div className="pt-3 text-sm leading-6 text-muted">
                 {reviewSummary.trueToSizePercent !== null ? (
-                  <p className="mb-3 rounded-lg bg-accent-tint px-3 py-2 text-xs font-semibold text-accent-dark">
+                  <p className="mb-3 rounded-none bg-brand-tint px-3 py-2 text-xs font-semibold text-brand">
                     {reviewSummary.trueToSizePercent}% of reviewers say this pair
                     fits true to size.
                   </p>

@@ -39,7 +39,7 @@ export function RatingStars({
               style={{ width: `${fill * 100}%` }}
             >
               <StarIcon
-                className="text-accent-dark"
+                className="text-brand"
                 style={{ width: dimension, height: dimension }}
               />
             </span>

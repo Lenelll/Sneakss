@@ -84,7 +84,7 @@ export function CheckoutClient({
         <p className="text-xs font-semibold tracking-[0.18em] text-brand uppercase">
           Checkout
         </p>
-        <h1 className="mt-4 text-5xl font-semibold tracking-[-0.055em] sm:text-6xl">
+        <h1 className="mt-4 display-type">
           Your bag is empty.
         </h1>
         <p className="mt-5 max-w-lg text-base leading-7 text-muted">
@@ -92,7 +92,7 @@ export function CheckoutClient({
           checkout.
         </p>
         <Link
-          className="mt-8 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-dark"
+          className="mt-8 rounded-none bg-ink px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-brand"
           href="/shop"
         >
           Browse the collection
@@ -107,7 +107,7 @@ export function CheckoutClient({
         <p className="text-xs font-semibold tracking-[0.18em] text-brand uppercase">
           Secure checkout
         </p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-balance sm:text-6xl">
+        <h1 className="mt-4 display-type text-balance">
           Review your pair, then continue with Shopify.
         </h1>
         <p className="mt-5 max-w-2xl text-base leading-7 text-muted">
@@ -118,7 +118,7 @@ export function CheckoutClient({
 
       {(checkoutError || cartError) && (
         <p
-          className="mt-8 rounded-2xl border border-accent/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]"
+          className="mt-8 rounded-none border border-line-strong bg-surface-2 p-4 text-sm leading-6 text-ink-soft"
           role="alert"
         >
           {checkoutError || cartError}
@@ -127,7 +127,7 @@ export function CheckoutClient({
 
       {resumeCheckout && signedIn && !checkoutError ? (
         <p
-          className="mt-8 rounded-2xl border border-brand/25 bg-brand-tint p-4 text-sm leading-6 text-brand"
+          className="mt-8 rounded-none border border-brand/25 bg-brand-tint p-4 text-sm leading-6 text-brand"
           role="status"
         >
           Sign-in complete. Review your order, then continue to secure
@@ -137,7 +137,7 @@ export function CheckoutClient({
 
       <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_25rem] lg:items-start lg:gap-14">
         <div>
-          <div className="rounded-3xl border border-line bg-white p-6 sm:p-8">
+          <div className="rounded-none border border-line bg-white p-6 sm:p-8">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-xl font-semibold tracking-[-0.025em]">
                 Checkout readiness
@@ -182,13 +182,13 @@ export function CheckoutClient({
             {!signedIn && customerAccountsConnected ? (
               <div className="mt-7 flex flex-wrap items-center gap-4">
                 <Link
-                  className="inline-flex rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-dark"
+                  className="inline-flex rounded-none bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand"
                   href="/account/sign-up?returnTo=/checkout"
                 >
                   Create account to continue
                 </Link>
                 <Link
-                  className="text-sm font-semibold text-brand underline decoration-accent decoration-2 underline-offset-4"
+                  className="text-sm font-semibold text-brand underline decoration-brand decoration-2 underline-offset-4"
                   href="/account/sign-in?returnTo=/checkout"
                 >
                   Sign in with email
@@ -196,7 +196,7 @@ export function CheckoutClient({
               </div>
             ) : (
               <Link
-                className="mt-7 inline-flex text-sm font-semibold text-brand underline decoration-accent decoration-2 underline-offset-4"
+                className="mt-7 inline-flex text-sm font-semibold text-brand underline decoration-brand decoration-2 underline-offset-4"
                 href="/account"
               >
                 View customer account
@@ -204,7 +204,7 @@ export function CheckoutClient({
             )}
           </div>
 
-          <div className="mt-6 rounded-3xl bg-canvas p-6 sm:p-8">
+          <div className="mt-6 rounded-none bg-canvas p-6 sm:p-8">
             <h2 className="text-lg font-semibold">Delivery</h2>
             <p className="mt-3 text-sm leading-6 text-muted">
               Delivery is fulfilled separately by Sneaker Vault GH&apos;s
@@ -214,7 +214,7 @@ export function CheckoutClient({
           </div>
         </div>
 
-        <aside className="rounded-3xl bg-brand p-6 text-white sm:p-7 lg:sticky lg:top-28">
+        <aside className="rounded-none bg-ink p-6 text-white sm:p-7 lg:sticky lg:top-28">
           <div className="flex items-center justify-between gap-4">
             <h2 className="font-semibold">Order summary</h2>
             <span className="text-xs text-white/65">
@@ -225,7 +225,7 @@ export function CheckoutClient({
           <ul className="mt-6 divide-y divide-white/20">
             {lines.map((line) => (
               <li className="flex gap-4 py-4 first:pt-0" key={line.lineId}>
-                <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-white">
+                <div className="relative size-16 shrink-0 overflow-hidden rounded-none bg-white">
                   <Image
                     alt={line.product.images[0].alt}
                     className="object-cover"
@@ -261,7 +261,7 @@ export function CheckoutClient({
           {canCheckout ? (
             <form action="/api/cart/checkout" method="post">
               <button
-                className="mt-7 w-full rounded-xl bg-accent px-5 py-3.5 text-sm font-semibold text-ink transition hover:bg-accent disabled:cursor-wait disabled:opacity-70"
+                className="mt-7 w-full bg-white px-5 py-3.5 text-sm font-semibold text-ink transition hover:bg-brand hover:text-white disabled:cursor-wait disabled:opacity-70"
                 disabled={isPending}
                 type="submit"
               >
@@ -271,7 +271,7 @@ export function CheckoutClient({
           ) : (
             <button
               aria-describedby="checkout-disabled-reason"
-              className="mt-7 w-full cursor-not-allowed rounded-xl bg-white/15 px-5 py-3.5 text-sm font-semibold text-white/70"
+              className="mt-7 w-full cursor-not-allowed rounded-none bg-white/15 px-5 py-3.5 text-sm font-semibold text-white/70"
               disabled
               type="button"
             >
@@ -306,11 +306,11 @@ function StatusRow({
   label: string;
 }) {
   return (
-    <li className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 rounded-2xl bg-canvas p-4">
+    <li className="grid grid-cols-[auto_minmax(0,1fr)] gap-3 rounded-none bg-canvas p-4">
       <span
         aria-hidden="true"
         className={`mt-1 size-2.5 rounded-full ${
-          connected ? "bg-brand" : "bg-accent"
+          connected ? "bg-brand" : "bg-muted-soft"
         }`}
       />
       <div>

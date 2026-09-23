@@ -51,7 +51,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
           <p className="text-xs font-semibold tracking-[0.18em] text-brand uppercase">
             Join the vault
           </p>
-          <h1 className="mt-4 text-5xl font-semibold tracking-[-0.055em] text-balance sm:text-6xl lg:text-7xl">
+          <h1 className="mt-4 display-type text-balance">
             Start with your details.
           </h1>
           <p className="mt-6 max-w-xl text-base leading-7 text-muted sm:text-lg">
@@ -67,7 +67,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
               ["03", "Access orders and checkout"],
             ].map(([number, label]) => (
               <li
-                className="rounded-2xl border border-line bg-white/60 p-4"
+                className="rounded-none border border-line bg-white/60 p-4"
                 key={number}
               >
                 <span className="text-xs font-semibold text-brand">
@@ -80,7 +80,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
 
           <div className="mt-8 flex flex-wrap items-center gap-4 text-sm">
             <Link
-              className="font-semibold text-brand underline decoration-accent decoration-2 underline-offset-4"
+              className="font-semibold text-brand underline decoration-brand decoration-2 underline-offset-4"
               href="/shop"
             >
               Continue shopping
@@ -94,7 +94,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
           </div>
         </div>
 
-        <div className="rounded-[1.5rem] border border-line bg-white p-6 shadow-[0_18px_50px_rgba(12,18,48,0.08)] sm:p-8">
+        <div className="rounded-none border border-line bg-white p-6 shadow-[0_18px_50px_rgba(12,18,48,0.08)] sm:p-8">
           <p className="text-xs font-semibold tracking-[0.16em] text-brand uppercase">
             Create account
           </p>
@@ -108,7 +108,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
 
           {message ? (
             <p
-              className="mt-5 rounded-xl border border-accent/50 bg-[#FFF9E8] p-4 text-sm leading-6 text-[#584814]"
+              className="mt-5 rounded-none border border-line-strong bg-surface-2 p-4 text-sm leading-6 text-ink-soft"
               role="alert"
             >
               {message}
@@ -125,7 +125,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
                 </label>
                 <input
                   autoComplete="given-name"
-                  className="mt-2 w-full rounded-xl border border-line-strong bg-white px-4 py-3 text-base text-ink transition placeholder:text-muted-soft hover:border-muted-soft focus:border-brand focus:outline-none"
+                  className="mt-2 w-full rounded-none border border-line-strong bg-white px-4 py-3 text-base text-ink transition placeholder:text-muted-soft hover:border-muted-soft focus:border-brand focus:outline-none"
                   id="firstName"
                   maxLength={64}
                   name="firstName"
@@ -140,7 +140,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
                 </label>
                 <input
                   autoComplete="family-name"
-                  className="mt-2 w-full rounded-xl border border-line-strong bg-white px-4 py-3 text-base text-ink transition placeholder:text-muted-soft hover:border-muted-soft focus:border-brand focus:outline-none"
+                  className="mt-2 w-full rounded-none border border-line-strong bg-white px-4 py-3 text-base text-ink transition placeholder:text-muted-soft hover:border-muted-soft focus:border-brand focus:outline-none"
                   id="lastName"
                   maxLength={64}
                   name="lastName"
@@ -158,7 +158,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
               <input
                 autoCapitalize="none"
                 autoComplete="email"
-                className="mt-2 w-full rounded-xl border border-line-strong bg-white px-4 py-3 text-base text-ink transition placeholder:text-muted-soft hover:border-muted-soft focus:border-brand focus:outline-none"
+                className="mt-2 w-full rounded-none border border-line-strong bg-white px-4 py-3 text-base text-ink transition placeholder:text-muted-soft hover:border-muted-soft focus:border-brand focus:outline-none"
                 id="email"
                 inputMode="email"
                 maxLength={254}
@@ -171,7 +171,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
             </div>
 
             <button
-              className="mt-6 w-full rounded-xl bg-brand px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              className="mt-6 w-full rounded-none bg-ink px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               type="submit"
             >
               Continue to sign in
@@ -181,7 +181,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
           <p className="mt-5 text-sm leading-6 text-muted">
             Prefer passwordless sign-in?{" "}
             <Link
-              className="font-semibold text-brand underline decoration-accent decoration-2 underline-offset-4"
+              className="font-semibold text-brand underline decoration-brand decoration-2 underline-offset-4"
               href={{ pathname: "/account/sign-in", query: { returnTo } }}
             >
               Sign in

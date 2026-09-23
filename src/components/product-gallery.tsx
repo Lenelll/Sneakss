@@ -21,7 +21,7 @@ export function ProductGallery({
 
   return (
     <div className="lg:sticky lg:top-28 lg:self-start">
-      <div className="relative aspect-[4/4.1] overflow-hidden rounded-[1.5rem] border border-line bg-surface-2 sm:rounded-[2rem]">
+      <div className="relative aspect-[4/4.1] overflow-hidden rounded-none border border-line bg-surface-2 sm:rounded-none">
         <Image
           key={active.id}
           src={active.src}
@@ -32,7 +32,7 @@ export function ProductGallery({
           className="object-cover"
         />
         {badge ? (
-          <span className="absolute top-4 left-4 rounded-full bg-accent px-3 py-1.5 text-[10px] font-bold tracking-[0.14em] text-ink uppercase shadow-sm sm:top-6 sm:left-6">
+          <span className="absolute top-4 left-4 bg-ink px-3 py-1.5 text-[0.6rem] font-semibold tracking-[0.18em] text-white uppercase sm:top-6 sm:left-6">
             {badge}
           </span>
         ) : null}
@@ -82,7 +82,7 @@ export function ProductGallery({
                 aria-selected={selected}
                 aria-label={`Show image ${index + 1}`}
                 onClick={() => setActiveIndex(index)}
-                className={`relative aspect-square w-[4.5rem] shrink-0 overflow-hidden rounded-xl border-2 bg-surface-2 transition ${
+                className={`relative aspect-square w-[4.5rem] shrink-0 overflow-hidden rounded-none border-2 bg-surface-2 transition ${
                   selected
                     ? "border-brand"
                     : "border-transparent opacity-75 hover:opacity-100"

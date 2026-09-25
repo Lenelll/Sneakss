@@ -64,22 +64,22 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
 
   return (
     <main className="min-h-screen bg-canvas text-ink">
-      <section className="border-b border-line px-5 py-14 sm:px-8 sm:py-20 lg:px-12">
-        <div className="mx-auto max-w-[1440px]">
-          <div className="mb-5 flex flex-wrap items-center gap-3">
-            <span className="bg-ink px-3 py-1.5 text-[0.62rem] font-semibold tracking-[0.2em] text-white uppercase">
-              Sneaker collection
-            </span>
-            <span className="text-xs font-semibold tracking-[0.14em] text-muted uppercase">
-              {catalog.source === "shopify"
-                ? "Shopify inventory · EU sizing"
-                : "Sneaker-ready EU sizing"}
-            </span>
-          </div>
-          <h1 className="display-type max-w-4xl">
-            Find your next pair.
+      {/*
+        Compact masthead. The collection label doubles as the page heading so
+        the grid starts near the top of the viewport instead of below a wall
+        of display type.
+      */}
+      <section className="border-b border-line px-5 py-4 sm:px-8 lg:px-12">
+        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center gap-x-4 gap-y-2">
+          <h1 className="bg-ink px-3 py-1.5 text-[0.62rem] font-semibold tracking-[0.2em] text-white uppercase">
+            Sneaker collection
           </h1>
-          <p className="mt-7 max-w-2xl text-base leading-7 text-muted sm:text-lg">
+          <span className="text-[0.62rem] font-semibold tracking-[0.18em] text-muted uppercase">
+            {catalog.source === "shopify"
+              ? "Shopify inventory · EU sizing"
+              : "Sneaker-ready EU sizing"}
+          </span>
+          <p className="w-full text-sm leading-6 text-muted lg:w-auto lg:flex-1 lg:text-right">
             {catalog.source === "shopify"
               ? "Browse current pairs and live EU size availability from the Sneaker Vault GH inventory."
               : "Browse the collection and continue using the sample catalog while your final products sync from Shopify."}

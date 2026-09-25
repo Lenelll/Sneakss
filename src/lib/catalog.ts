@@ -57,6 +57,33 @@ export function getFeaturedProducts(
     .slice(0, Math.max(0, limit));
 }
 
+/**
+ * Tags that opt a product into the homepage hero rotation. Set any of these
+ * on the product in Shopify and its first image becomes a hero slide — no
+ * code change required.
+ */
+export const HERO_TAGS = ["hero", "home-hero", "homepage-hero"] as const;
+
+/**
+ * Products chosen for the hero, in catalog order. A product needs at least
+ * one image to be usable as a slide.
+ */
+export function getHeroProducts(
+  limit = 4,
+  catalog: readonly Product[] = products,
+): Product[] {
+  return catalog
+    .filter(
+      (product) =>
+        product.status === "active" &&
+        product.images.length > 0 &&
+        product.tags.some((tag) =>
+          (HERO_TAGS as readonly string[]).includes(tag.trim().toLowerCase()),
+        ),
+    )
+    .slice(0, Math.max(0, limit));
+}
+
 export function getNewArrivals(
   limit = 8,
   catalog: readonly Product[] = products,

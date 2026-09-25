@@ -183,7 +183,7 @@ export function ProductReviews({
                       >
                         <span className="flex items-center gap-1 text-muted">
                           {stars}
-                          <StarIcon className="h-3 w-3 text-brand" />
+                          <StarIcon className="h-3 w-3 text-ink" />
                         </span>
                         <span className="h-2 overflow-hidden rounded-full bg-surface-2">
                           <span
@@ -288,15 +288,15 @@ export function ProductReviews({
                         type="button"
                         onClick={() => openLightbox(allPhotos, index)}
                         aria-label={`Open customer photo ${index + 1} of ${allPhotos.length}`}
-                        className="relative block aspect-square w-24 overflow-hidden rounded-none border border-line bg-surface-2 transition hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:w-28"
+                        className="group relative block aspect-[4/5] w-40 overflow-hidden bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:w-48"
                       >
                         <Image
                           src={reviewPhotoUrl(item.photoId)}
                           alt=""
                           fill
                           unoptimized
-                          sizes="112px"
-                          className="object-cover"
+                          sizes="(max-width: 640px) 160px, 192px"
+                          className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                         />
                       </button>
                     </li>
@@ -361,7 +361,7 @@ export function ProductReviews({
                   </p>
 
                   {review.photos.length > 0 ? (
-                    <ul className="mt-4 flex flex-wrap gap-2">
+                    <ul className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
                       {review.photos.map((photo, index) => {
                         const items = review.photos.map((entry) => ({
                           photoId: entry.id,
@@ -375,15 +375,15 @@ export function ProductReviews({
                               type="button"
                               onClick={() => openLightbox(items, index)}
                               aria-label={`Open photo ${index + 1} from ${review.authorName}`}
-                              className="relative block aspect-square w-20 overflow-hidden rounded-none border border-line bg-surface-2 transition hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                              className="group relative block aspect-[4/5] w-full overflow-hidden bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                             >
                               <Image
                                 src={reviewPhotoUrl(photo.id)}
                                 alt=""
                                 fill
                                 unoptimized
-                                sizes="80px"
-                                className="object-cover"
+                                sizes="(max-width: 640px) 45vw, 220px"
+                                className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                               />
                             </button>
                           </li>
@@ -666,7 +666,7 @@ function ReviewForm({
               >
                 <StarIcon
                   className={
-                    value <= displayRating ? "text-brand" : "text-line-strong"
+                    value <= displayRating ? "text-ink" : "text-line-strong"
                   }
                 />
               </button>

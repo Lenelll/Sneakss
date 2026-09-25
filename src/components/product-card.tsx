@@ -33,6 +33,17 @@ export function ProductCard({
     ) <= 4;
   const colorCount = product.colors.length;
 
+  /*
+    Sizes can carry different prices. `product.price` is the cheapest, so say
+    "From" rather than implying one flat price for the style.
+  */
+  const pricedVariants =
+    availableVariants.length > 0 ? availableVariants : product.variants;
+  const hasPriceRange =
+    pricedVariants.length > 1 &&
+    Math.max(...pricedVariants.map((variant) => variant.price)) >
+      Math.min(...pricedVariants.map((variant) => variant.price));
+
   return (
     <article className={`group min-w-0 ${className}`}>
       {/*
@@ -92,6 +103,11 @@ export function ProductCard({
           {product.brand}
         </p>
         <p className="mt-1.5 text-[0.95rem] font-semibold tracking-[-0.01em] text-ink">
+          {hasPriceRange ? (
+            <span className="mr-1 text-[0.7rem] font-normal text-muted">
+              From
+            </span>
+          ) : null}
           {formatGHS(product.price)}
         </p>
         <h3 className="mt-0.5 truncate text-sm leading-6 font-normal text-ink">

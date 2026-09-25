@@ -28,6 +28,7 @@ export function SiteHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuDialogRef = useRef<HTMLDialogElement>(null);
   const [searchValue, setSearchValue] = useState("");
+  const hidesMobileSearch = pathname === "/shop";
 
   useEffect(() => {
     const dialog = menuDialogRef.current;
@@ -150,7 +151,16 @@ export function SiteHeader() {
         </div>
       </header>
 
-      <div className="border-b border-line bg-canvas px-4 py-2 sm:hidden">
+      {/*
+        The shop page carries its own catalogue search, so the phone-width
+        search bar is suppressed there — two stacked fields would push the
+        product grid off the first screen.
+      */}
+      <div
+        className={`border-b border-line bg-canvas px-4 py-2 ${
+          hidesMobileSearch ? "hidden" : "sm:hidden"
+        }`}
+      >
         <form
           aria-label="Search the catalog"
           className="mx-auto flex max-w-3xl items-center gap-2"

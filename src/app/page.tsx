@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { HeroCarousel, type HeroSlide } from "@/components/hero-carousel";
 import { ProductCard } from "@/components/product-card";
 import { RatingStars } from "@/components/rating-stars";
 import {
@@ -8,6 +9,7 @@ import {
   PRODUCT_CATEGORIES,
   formatGHS,
   getFeaturedProducts,
+  getHeroProducts,
   type Product,
 } from "@/lib";
 import { getCommerceCatalog } from "@/lib/catalog-source";
@@ -17,6 +19,15 @@ import { getRecentReviews, getReviewSummaries } from "@/lib/reviews/store";
 const popularSizes = EU_SIZE_SCALE.filter(
   (size) => size >= 38 && size <= 45 && Number.isInteger(size),
 );
+
+/** How many pairs the hero rotates through at most. */
+const HERO_SLIDE_LIMIT = 4;
+
+const FALLBACK_HERO_SLIDE = {
+  id: "hero-fallback",
+  src: "/images/products/demo-terrace-forest.png",
+  alt: "Sneaker on a neutral background",
+} as const;
 
 const tickerItems = [
   "EU sizing",
@@ -53,12 +64,34 @@ export default async function HomePage() {
   const taggedFeatured = getFeaturedProducts(8, catalog.products);
   const featuredProducts =
     taggedFeatured.length > 0 ? taggedFeatured : activeProducts.slice(0, 8);
-  const heroProduct = featuredProducts[0] ?? activeProducts[0] ?? null;
-  const heroImage = heroProduct?.images[0] ?? {
-    id: "hero-fallback",
-    src: "/images/products/demo-terrace-forest.png",
-    alt: "Sneaker on a neutral background",
-  };
+  /*
+    Hero rotation. Products tagged `hero` in Shopify drive the slides; if the
+    store has none tagged yet we fall back to the featured edit, then to any
+    active product, and finally to a bundled image, so the hero is never blank.
+  */
+  const taggedHero = getHeroProducts(HERO_SLIDE_LIMIT, catalog.products);
+  const heroProducts = (
+    taggedHero.length > 0
+      ? taggedHero
+      : (featuredProducts.length > 0 ? featuredProducts : activeProducts)
+          .filter((product) => product.images.length > 0)
+          .slice(0, HERO_SLIDE_LIMIT)
+  ) satisfies readonly Product[];
+
+  const heroSlides: HeroSlide[] =
+    heroProducts.length > 0
+      ? heroProducts.map((product) => ({
+          src: product.images[0].src,
+          alt: product.images[0].alt,
+          handle: product.handle,
+          title: product.title,
+          brand: product.brand,
+          price: formatGHS(product.price),
+        }))
+      : [FALLBACK_HERO_SLIDE];
+
+  const heroProduct = heroProducts[0] ?? featuredProducts[0] ?? activeProducts[0] ?? null;
+  const heroImage = heroProduct?.images[0] ?? FALLBACK_HERO_SLIDE;
   const inStockCount = activeProducts.filter((product) =>
     product.variants.some((variant) => variant.availableForSale),
   ).length;
@@ -67,7 +100,7 @@ export default async function HomePage() {
 
   const shownHandles = Array.from(
     new Set(
-      [...featuredProducts, heroProduct]
+      [...featuredProducts, ...heroProducts, heroProduct]
         .filter((product): product is Product => product !== null)
         .map((product) => product.handle),
     ),
@@ -76,7 +109,7 @@ export default async function HomePage() {
     getReviewSummaries(shownHandles),
     getRecentReviews(
       activeProducts.map((product) => product.handle),
-      6,
+      10,
     ),
   ]);
   const heroRating = heroProduct ? ratings[heroProduct.handle] : undefined;
@@ -93,17 +126,7 @@ export default async function HomePage() {
         Hero: one full-bleed photograph, a centred light headline and a
         single outlined call to action. Nothing else competes with it.
       */}
-      <section className="hero-media flex min-h-[38rem] items-center justify-center lg:min-h-[44rem]">
-        <Image
-          src={heroImage.src}
-          alt={heroImage.alt}
-          fill
-          priority
-          sizes="100vw"
-          className="-z-10 object-cover"
-        />
-        <div className="hero-scrim absolute inset-0 -z-10" aria-hidden="true" />
-
+      <HeroCarousel slides={heroSlides}>
         <div className="page-shell reveal-up w-full py-24 text-center text-white">
           <p className="eyebrow text-white/70">Accra, Ghana</p>
           <h1 className="display-type mx-auto mt-6 max-w-4xl text-balance">
@@ -125,7 +148,7 @@ export default async function HomePage() {
             </Link>
           </div>
         </div>
-      </section>
+      </HeroCarousel>
 
       {/* Marquee: monochrome, hairline-bounded. */}
       <div
@@ -363,59 +386,71 @@ export default async function HomePage() {
                 Real reviews and photos from people wearing these pairs.
               </p>
             </div>
-            <ul className="grid gap-px bg-line md:grid-cols-2 xl:grid-cols-3">
-              {recentReviews.map((review) => (
-                <li
-                  key={review.id}
-                  className="flex flex-col bg-surface p-7"
-                >
-                  {review.photos.length > 0 ? (
-                    <div className="mb-5 flex gap-2">
-                      {review.photos.slice(0, 3).map((photo) => (
-                        <span
-                          key={photo.id}
-                          className="relative aspect-square w-20 overflow-hidden bg-surface-2"
-                        >
-                          <Image
-                            src={`/api/reviews/photos/${photo.id}`}
-                            alt=""
-                            fill
-                            unoptimized
-                            sizes="80px"
-                            className="object-cover"
-                          />
-                        </span>
-                      ))}
-                    </div>
-                  ) : null}
-                  <RatingStars
-                    value={review.rating}
-                    label={`${review.rating} out of 5 stars`}
-                  />
-                  <h3 className="mt-4 text-base font-semibold tracking-[-0.01em]">
-                    {review.title}
-                  </h3>
-                  <p className="mt-2 line-clamp-4 text-sm leading-6 text-muted">
-                    {review.body}
-                  </p>
-                  <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-6 text-xs">
-                    <span className="font-semibold text-ink">
-                      {review.authorName}
-                    </span>
-                    {review.fit ? (
-                      <span className="text-muted">
-                        {REVIEW_FIT_LABELS[review.fit]}
-                      </span>
-                    ) : null}
+            {/*
+              Photo wall: the customer's own shot carries each tile, with
+              their name and words laid over it. Reviews without a photo keep
+              their place in the grid as a plain quote tile.
+            */}
+            <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {recentReviews.map((review) => {
+                const photo = review.photos[0];
+
+                return (
+                  <li key={review.id}>
                     <Link
                       href={`/products/${review.productHandle}#reviews`}
-                      className="ml-auto font-semibold text-brand underline decoration-1 underline-offset-4"
+                      className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                     >
-                      {review.productTitle}
+                      {photo ? (
+                        <>
+                          <Image
+                            src={`/api/reviews/photos/${photo.id}`}
+                            alt={`Photo from ${review.authorName}`}
+                            fill
+                            unoptimized
+                            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+                            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+                          />
+                          <span
+                            aria-hidden="true"
+                            className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/85 via-black/35 to-transparent"
+                          />
+                          {review.photos.length > 1 ? (
+                            <span className="absolute top-3 right-3 bg-black/55 px-2 py-1 text-[0.6rem] font-semibold text-white backdrop-blur">
+                              +{review.photos.length - 1}
+                            </span>
+                          ) : null}
+                        </>
+                      ) : null}
+
+                      <div className="relative p-4">
+                        <RatingStars
+                          value={review.rating}
+                          size="sm"
+                          tone="light"
+                          label={`${review.rating} out of 5 stars`}
+                        />
+                        <p className="mt-2 text-sm font-semibold text-white">
+                          {review.authorName}
+                        </p>
+                        <p
+                          className={`mt-1 text-xs leading-5 text-white/80 ${
+                            photo ? "line-clamp-2" : "line-clamp-6"
+                          }`}
+                        >
+                          {review.body}
+                        </p>
+                        <p className="mt-2 truncate text-[0.6rem] font-semibold tracking-[0.16em] text-white/55 uppercase">
+                          {review.productTitle}
+                          {review.fit && REVIEW_FIT_LABELS[review.fit]
+                            ? ` · ${REVIEW_FIT_LABELS[review.fit]}`
+                            : ""}
+                        </p>
+                      </div>
                     </Link>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </section>

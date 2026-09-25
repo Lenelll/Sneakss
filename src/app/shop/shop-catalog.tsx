@@ -22,6 +22,12 @@ const SORT_OPTIONS: { label: string; value: ProductSort }[] = [
   { label: "Name: A–Z", value: "name-asc" },
 ];
 
+const AVAILABILITY_OPTIONS: { label: string; value: AvailabilityFilter }[] = [
+  { label: "All products", value: "all" },
+  { label: "In stock", value: "in-stock" },
+  { label: "Sold out", value: "sold-out" },
+];
+
 type CategorySelection = ProductCategory | "all";
 type SizeSelection = EuSize | "all";
 
@@ -48,10 +54,10 @@ export function ShopCatalog({
   );
   const [brand, setBrand] = useState("all");
   const [size, setSize] = useState<SizeSelection>(initialSize ?? "all");
-  const [availability, setAvailability] =
-    useState<AvailabilityFilter>("all");
+  const [availability, setAvailability] = useState<AvailabilityFilter>("all");
   const [sort, setSort] = useState<ProductSort>(initialSort);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  /* Sort and filters share one panel so neither eats space beside the grid. */
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   const brands = useMemo(
     () =>
@@ -87,12 +93,12 @@ export function ShopCatalog({
     [availability, brand, catalog, category, query, size, sort],
   );
 
-  const hasActiveFilters =
-    query.trim().length > 0 ||
-    category !== "all" ||
-    brand !== "all" ||
-    size !== "all" ||
-    availability !== "all";
+  const activeFilterCount =
+    (category !== "all" ? 1 : 0) +
+    (brand !== "all" ? 1 : 0) +
+    (size !== "all" ? 1 : 0) +
+    (availability !== "all" ? 1 : 0);
+  const hasActiveFilters = activeFilterCount > 0 || query.trim().length > 0;
 
   function clearFilters() {
     setQuery("");
@@ -103,234 +109,216 @@ export function ShopCatalog({
   }
 
   return (
-    <section className="px-5 py-8 sm:px-8 lg:px-12 lg:py-12">
+    <section className="px-5 py-5 sm:px-8 lg:px-12">
       <div className="mx-auto max-w-[1440px]">
-        <div className="grid gap-4 border-b border-line pb-7 md:grid-cols-[minmax(0,1fr)_240px]">
-          <label className="block">
+        {/* Controls: a short search field, the result count and one panel toggle. */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <label className="block w-full sm:w-[22rem]">
             <span className="sr-only">Search the catalogue</span>
             <input
               type="search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search by style, brand or colour"
-              className="h-14 w-full border border-line-strong bg-white px-5 text-base text-ink outline-none placeholder:text-muted-soft focus:border-ink"
+              className="h-11 w-full border border-line-strong bg-white px-4 text-sm text-ink outline-none placeholder:text-muted-soft focus:border-ink"
             />
           </label>
 
-          <label className="relative block">
-            <span className="sr-only">Sort products</span>
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute top-1/2 right-5 -translate-y-1/2 text-xs text-muted"
+          <div className="flex items-center gap-4">
+            <p className="text-sm text-muted" aria-live="polite">
+              <span className="font-semibold text-ink">
+                {filteredProducts.length}
+              </span>{" "}
+              {filteredProducts.length === 1 ? "style" : "styles"}
+            </p>
+            <button
+              type="button"
+              aria-expanded={isPanelOpen}
+              aria-controls="shop-controls"
+              onClick={() => setIsPanelOpen((open) => !open)}
+              className="flex h-11 items-center gap-2 border border-line-strong px-5 text-[0.68rem] font-semibold tracking-[0.16em] uppercase transition-colors hover:border-ink"
             >
-              ▾
-            </span>
-            <select
-              value={sort}
-              onChange={(event) => setSort(event.target.value as ProductSort)}
-              className="h-14 w-full appearance-none border border-line-strong bg-white pr-10 pl-5 text-sm text-ink outline-none focus:border-ink"
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  Sort: {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        {/*
-          Below desktop the filter column is collapsed behind a toggle so the
-          grid is the first thing in reach.
-        */}
-        <div className="pt-7 lg:hidden">
-          <button
-            type="button"
-            aria-expanded={filtersOpen}
-            aria-controls="shop-filters"
-            onClick={() => setFiltersOpen((open) => !open)}
-            className="flex w-full items-center justify-between border border-line-strong px-5 py-4 text-[0.68rem] font-semibold tracking-[0.2em] uppercase transition-colors hover:border-ink"
-          >
-            <span>
-              Filter
-              {hasActiveFilters ? (
-                <span className="ml-2 font-normal text-brand normal-case">
-                  active
+              Sort &amp; filter
+              {activeFilterCount > 0 ? (
+                <span className="flex h-5 min-w-5 items-center justify-center bg-brand px-1 text-[0.6rem] text-white">
+                  {activeFilterCount}
                 </span>
               ) : null}
-            </span>
-            <span aria-hidden="true">{filtersOpen ? "–" : "+"}</span>
-          </button>
-        </div>
-
-        <div className="grid gap-10 pt-7 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-12">
-          <aside
-            id="shop-filters"
-            aria-label="Product filters"
-            className={`lg:sticky lg:top-28 lg:block lg:self-start ${
-              filtersOpen ? "" : "hidden"
-            }`}
-          >
-            <div className="flex items-center justify-between border-b border-line pb-4">
-              <h2 className="text-[0.68rem] font-semibold tracking-[0.2em] uppercase">
-                Filter
-              </h2>
-              {hasActiveFilters ? (
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="text-xs font-bold text-brand underline decoration-1 underline-offset-4 hover:text-brand-dark focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
-                >
-                  Clear all
-                </button>
-              ) : null}
-            </div>
-
-            <FilterGroup title="Category">
-              <div className="grid grid-cols-2 gap-2 lg:grid-cols-1">
-                <FilterButton
-                  active={category === "all"}
-                  onClick={() => setCategory("all")}
-                >
-                  All categories
-                </FilterButton>
-                {PRODUCT_CATEGORIES.map((item) => (
-                  <FilterButton
-                    key={item}
-                    active={category === item}
-                    onClick={() => setCategory(item)}
-                  >
-                    {item}
-                  </FilterButton>
-                ))}
-              </div>
-            </FilterGroup>
-
-            <FilterGroup title="Brand">
-              <label className="relative block">
-                <span className="sr-only">Filter by brand</span>
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-muted"
-                >
-                  ▾
-                </span>
-                <select
-                  value={brand}
-                  onChange={(event) => setBrand(event.target.value)}
-                  className="h-11 w-full appearance-none border border-line-strong bg-white pr-8 pl-3 text-sm text-ink outline-none focus:border-ink"
-                >
-                  <option value="all">All demo brands</option>
-                  {brands.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </FilterGroup>
-
-            <FilterGroup title="EU size">
-              <div className="grid grid-cols-5 gap-1.5 lg:grid-cols-4">
-                <button
-                  type="button"
-                  aria-pressed={size === "all"}
-                  onClick={() => setSize("all")}
-                  className={`col-span-2 min-h-10 rounded-none border px-2 text-xs font-bold transition-colors ${
-                    size === "all"
-                      ? "border-brand bg-brand text-white"
-                      : "border-line-strong bg-white hover:border-brand"
-                  }`}
-                >
-                  Any
-                </button>
-                {stockedSizes.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    aria-pressed={size === item}
-                    onClick={() => setSize(item)}
-                    className={`min-h-10 rounded-none border px-1 text-xs font-bold transition-colors ${
-                      size === item
-                        ? "border-brand bg-brand text-white"
-                        : "border-line-strong bg-white hover:border-brand"
-                    }`}
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
-            </FilterGroup>
-
-            <FilterGroup title="Availability">
-              <div className="grid gap-2">
-                {(
-                  [
-                    ["all", "All products"],
-                    ["in-stock", "In stock"],
-                    ["sold-out", "Sold out"],
-                  ] as const
-                ).map(([value, label]) => (
-                  <FilterButton
-                    key={value}
-                    active={availability === value}
-                    onClick={() => setAvailability(value)}
-                  >
-                    {label}
-                  </FilterButton>
-                ))}
-              </div>
-            </FilterGroup>
-          </aside>
-
-          <div>
-            <div className="mb-6 flex min-h-7 flex-wrap items-center justify-between gap-3">
-              <p className="text-sm text-muted" aria-live="polite">
-                <span className="font-bold text-ink">
-                  {filteredProducts.length}
-                </span>{" "}
-                {filteredProducts.length === 1 ? "style" : "styles"}
-              </p>
-              {size !== "all" ? (
-                <p className="border border-brand/30 bg-brand-tint px-3 py-1 text-xs font-semibold text-brand">
-                  Showing EU {size}
-                </p>
-              ) : null}
-            </div>
-
-            {filteredProducts.length > 0 ? (
-              <div className="grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-4 xl:grid-cols-3">
-                {filteredProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    rating={ratings[product.handle]}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-none border border-line bg-white px-6 py-16 text-center sm:px-12">
-                <p className="text-xs font-bold tracking-[0.16em] text-brand uppercase">
-                  Nothing here yet
-                </p>
-                <h2 className="mt-3 section-title">
-                  Try a wider search.
-                </h2>
-                <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted">
-                  No demo products match every selected filter. Clear the
-                  filters and build a new combination.
-                </p>
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  className="mt-7 rounded-none bg-ink px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
-                >
-                  Clear filters
-                </button>
-              </div>
-            )}
+              <span aria-hidden="true">{isPanelOpen ? "–" : "+"}</span>
+            </button>
           </div>
         </div>
+
+        {isPanelOpen ? (
+          <div
+            id="shop-controls"
+            className="mt-4 border border-line-strong bg-surface p-5 sm:p-6"
+          >
+            <div className="grid gap-7 sm:grid-cols-2 xl:grid-cols-4">
+              <FilterGroup title="Sort by">
+                <div className="grid gap-2">
+                  {SORT_OPTIONS.map((option) => (
+                    <FilterButton
+                      key={option.value}
+                      active={sort === option.value}
+                      onClick={() => setSort(option.value)}
+                    >
+                      {option.label}
+                    </FilterButton>
+                  ))}
+                </div>
+              </FilterGroup>
+
+              <FilterGroup title="Category">
+                <div className="grid gap-2">
+                  <FilterButton
+                    active={category === "all"}
+                    onClick={() => setCategory("all")}
+                  >
+                    All categories
+                  </FilterButton>
+                  {PRODUCT_CATEGORIES.map((item) => (
+                    <FilterButton
+                      key={item}
+                      active={category === item}
+                      onClick={() => setCategory(item)}
+                    >
+                      {item}
+                    </FilterButton>
+                  ))}
+                </div>
+              </FilterGroup>
+
+              <div className="flex flex-col gap-7">
+                <FilterGroup title="Brand">
+                  <label className="relative block">
+                    <span className="sr-only">Filter by brand</span>
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-xs text-muted"
+                    >
+                      ▾
+                    </span>
+                    <select
+                      value={brand}
+                      onChange={(event) => setBrand(event.target.value)}
+                      className="h-11 w-full appearance-none border border-line-strong bg-white pr-8 pl-3 text-sm text-ink outline-none focus:border-ink"
+                    >
+                      <option value="all">All brands</option>
+                      {brands.map((item) => (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </FilterGroup>
+
+                <FilterGroup title="Availability">
+                  <div className="grid gap-2">
+                    {AVAILABILITY_OPTIONS.map((option) => (
+                      <FilterButton
+                        key={option.value}
+                        active={availability === option.value}
+                        onClick={() => setAvailability(option.value)}
+                      >
+                        {option.label}
+                      </FilterButton>
+                    ))}
+                  </div>
+                </FilterGroup>
+              </div>
+
+              <FilterGroup title="EU size">
+                <div className="grid grid-cols-4 gap-1.5">
+                  <button
+                    type="button"
+                    aria-pressed={size === "all"}
+                    onClick={() => setSize("all")}
+                    className={`col-span-2 min-h-10 border px-2 text-xs font-semibold transition-colors ${
+                      size === "all"
+                        ? "border-brand bg-brand text-white"
+                        : "border-line-strong bg-white hover:border-ink"
+                    }`}
+                  >
+                    Any
+                  </button>
+                  {stockedSizes.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      aria-pressed={size === item}
+                      onClick={() => setSize(item)}
+                      className={`min-h-10 border px-1 text-xs font-semibold transition-colors ${
+                        size === item
+                          ? "border-brand bg-brand text-white"
+                          : "border-line-strong bg-white hover:border-ink"
+                      }`}
+                    >
+                      {item}
+                    </button>
+                  ))}
+                </div>
+              </FilterGroup>
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
+              <button
+                type="button"
+                onClick={clearFilters}
+                disabled={!hasActiveFilters}
+                className="text-xs font-semibold text-brand underline decoration-1 underline-offset-4 disabled:text-muted-soft disabled:no-underline"
+              >
+                Clear all
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsPanelOpen(false)}
+                className="bg-ink px-6 py-3 text-[0.68rem] font-semibold tracking-[0.16em] text-white uppercase transition-colors hover:bg-brand"
+              >
+                Show {filteredProducts.length}{" "}
+                {filteredProducts.length === 1 ? "style" : "styles"}
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {size !== "all" ? (
+          <p className="mt-4 inline-flex border border-brand/30 bg-brand-tint px-3 py-1 text-xs font-semibold text-brand">
+            Showing EU {size}
+          </p>
+        ) : null}
+
+        {filteredProducts.length > 0 ? (
+          <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-4 md:grid-cols-3 xl:grid-cols-4">
+            {filteredProducts.map((product, index) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                rating={ratings[product.handle]}
+                priority={index < 4}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="mt-6 border border-line bg-white px-6 py-16 text-center sm:px-12">
+            <p className="text-[0.62rem] font-semibold tracking-[0.2em] text-muted uppercase">
+              Nothing here yet
+            </p>
+            <h2 className="section-title mt-3">Try a wider search.</h2>
+            <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted">
+              No products match every selected filter. Clear the filters and
+              build a new combination.
+            </p>
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="mt-7 bg-ink px-6 py-3 text-[0.68rem] font-semibold tracking-[0.16em] text-white uppercase transition-colors hover:bg-brand"
+            >
+              Clear filters
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -344,7 +332,7 @@ function FilterGroup({
   title: string;
 }>) {
   return (
-    <div className="border-b border-line py-5">
+    <div>
       <h3 className="mb-3 text-[0.62rem] font-semibold tracking-[0.2em] text-muted uppercase">
         {title}
       </h3>
@@ -367,10 +355,10 @@ function FilterButton({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className={`min-h-10 rounded-none border px-3 text-left text-sm font-semibold transition-colors ${
+      className={`min-h-10 border px-3 text-left text-sm transition-colors ${
         active
-          ? "border-brand bg-brand-tint text-brand"
-          : "border-line bg-white text-muted hover:border-brand hover:text-ink"
+          ? "border-brand bg-brand-tint font-semibold text-brand"
+          : "border-line bg-white text-muted hover:border-ink hover:text-ink"
       }`}
     >
       {children}

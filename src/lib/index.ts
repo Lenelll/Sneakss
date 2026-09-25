@@ -1,7 +1,9 @@
 export {
+  HERO_TAGS,
   filterProducts,
   getAvailableSizes,
   getFeaturedProducts,
+  getHeroProducts,
   getNewArrivals,
   getProductByHandle,
   getProductById,

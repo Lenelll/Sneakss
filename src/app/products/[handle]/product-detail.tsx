@@ -67,6 +67,23 @@ export function ProductDetail({
   );
   const isSoldOut = availableVariants.length === 0;
   const totalInventory = getTotalInventory(product);
+
+  /*
+    Per-size pricing. Shopify prices each variant, and `product.price` is only
+    the cheapest, so the page tracks the selected size's own price and tells
+    the visitor when sizes differ.
+  */
+  const pricedVariants =
+    availableVariants.length > 0 ? availableVariants : product.variants;
+  const variantPrices = pricedVariants.map((variant) => variant.price);
+  const lowestPrice = variantPrices.length
+    ? Math.min(...variantPrices)
+    : product.price;
+  const highestPrice = variantPrices.length
+    ? Math.max(...variantPrices)
+    : product.price;
+  const hasPriceRange = highestPrice > lowestPrice;
+  const displayPrice = selectedVariant?.price ?? lowestPrice;
   const maxQuantity = Math.min(
     MAX_LINE_QUANTITY,
     Math.max(1, selectedVariant?.inventoryQuantity ?? 1),
@@ -152,16 +169,28 @@ export function ProductDetail({
           <p className="mt-3 text-sm text-muted">{product.colorway}</p>
 
           <div className="mt-5 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-            <p className="text-3xl font-semibold tracking-[-0.03em]">
-              {formatGHS(product.price)}
+            {/*
+              Sizes can be priced differently, so the headline price follows
+              the selected size rather than the product minimum.
+            */}
+            <p
+              aria-live="polite"
+              className="text-3xl font-semibold tracking-[-0.03em]"
+            >
+              {formatGHS(displayPrice)}
+              {selectedVariant ? (
+                <span className="sr-only"> for {selectedVariant.sizeLabel}</span>
+              ) : null}
             </p>
+            {hasPriceRange ? (
+              <p className="text-xs text-muted">
+                {formatGHS(lowestPrice)} – {formatGHS(highestPrice)} across
+                sizes
+              </p>
+            ) : null}
             <p
               className={`text-xs font-semibold ${
-                isSoldOut
-                  ? "text-error"
-                  : selectedVariant && selectedVariant.inventoryQuantity <= 3
-                    ? "text-brand"
-                    : "text-brand"
+                isSoldOut ? "text-error" : "text-brand"
               }`}
             >
               {stockLine}
@@ -196,6 +225,8 @@ export function ProductDetail({
                     disabled={!variant.availableForSale}
                     aria-pressed={isSelected}
                     aria-label={`${variant.sizeLabel}${
+                      hasPriceRange ? `, ${formatGHS(variant.price)}` : ""
+                    }${
                       variant.availableForSale
                         ? low
                           ? `, only ${variant.inventoryQuantity} left`
@@ -212,7 +243,17 @@ export function ProductDetail({
                     }`}
                   >
                     {variant.size}
-                    {low ? (
+                    {/* Only worth the clutter when sizes are priced apart. */}
+                    {hasPriceRange ? (
+                      <span
+                        aria-hidden="true"
+                        className={`mt-0.5 text-[0.55rem] font-semibold tabular-nums ${
+                          isSelected ? "text-white/85" : "text-muted"
+                        }`}
+                      >
+                        {formatGHS(variant.price)}
+                      </span>
+                    ) : low ? (
                       <span
                         aria-hidden="true"
                         className={`mt-0.5 text-[0.55rem] font-semibold tracking-[0.08em] uppercase ${

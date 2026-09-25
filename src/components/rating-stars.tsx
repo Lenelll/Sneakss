@@ -7,15 +7,20 @@ export function RatingStars({
   size = "md",
   className = "",
   label,
+  tone = "dark",
 }: {
   value: number;
   size?: "sm" | "md" | "lg";
   className?: string;
   label?: string;
+  /** `light` renders white stars for use over photography or dark panels. */
+  tone?: "dark" | "light";
 }) {
   const clamped = Math.max(0, Math.min(5, value));
   const dimension = size === "sm" ? 12 : size === "lg" ? 22 : 16;
   const gap = size === "sm" ? "gap-0.5" : "gap-1";
+  const emptyClass = tone === "light" ? "text-white/35" : "text-line-strong";
+  const fillClass = tone === "light" ? "text-white" : "text-ink";
 
   return (
     <span
@@ -33,13 +38,13 @@ export function RatingStars({
             className="relative inline-block shrink-0"
             style={{ width: dimension, height: dimension }}
           >
-            <StarIcon className="absolute inset-0 text-line-strong" />
+            <StarIcon className={`absolute inset-0 ${emptyClass}`} />
             <span
               className="absolute inset-y-0 left-0 overflow-hidden"
               style={{ width: `${fill * 100}%` }}
             >
               <StarIcon
-                className="text-brand"
+                className={fillClass}
                 style={{ width: dimension, height: dimension }}
               />
             </span>

@@ -4,27 +4,26 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Learn about Sneaker Vault GH and our approach to bringing a considered sneaker selection to customers in Ghana.",
+    "Sneaker Vault GH is a Ghanaian sneaker destination built for people who care about what they wear and how they show up.",
 };
 
 const principles = [
   {
     number: "01",
-    title: "A focused selection",
+    title: "Curated",
     description:
-      "A considered catalogue makes it easier to discover pairs worth wearing, without the noise of an endless marketplace.",
+      "We'd rather offer a focused selection of pairs worth wearing than overwhelm you with endless options.",
   },
   {
     number: "02",
-    title: "Clear availability",
-    description:
-      "Each size is tracked individually, so the options shown on a product page reflect the stock available to order.",
+    title: "Authentic",
+    description: "Clear products. Clear pricing. Clear availability.",
   },
   {
     number: "03",
     title: "Made for Ghana",
     description:
-      "Prices are shown in Ghana cedis and the shopping experience is designed around customers purchasing locally.",
+      "Ghana cedi pricing, EU sizing, local delivery and a shopping experience designed around customers here.",
   },
 ];
 
@@ -38,38 +37,41 @@ export default function AboutPage() {
               About Sneaker Vault GH
             </p>
             <h1 className="display-type max-w-4xl">
-              Great pairs, thoughtfully selected.
+              Great pairs. Thoughtfully selected.
             </h1>
           </div>
           <p className="max-w-xl text-base leading-7 text-muted sm:text-lg sm:leading-8">
-            Sneaker Vault GH is being built as a straightforward place to
-            discover and purchase sneakers online in Ghana.
+            Sneaker Vault GH is a Ghanaian sneaker destination built for people
+            who care about what they wear and how they show up.
           </p>
         </header>
 
-        <aside
-          aria-label="Draft content notice"
-          className="my-10 border-l-2 border-ink bg-surface-2 px-5 py-4 text-sm leading-6 text-muted sm:px-6"
+        <section
+          aria-labelledby="brand-story-heading"
+          className="grid gap-10 py-12 lg:grid-cols-[0.7fr_1.3fr] lg:gap-20 lg:py-20"
         >
-          <span className="font-semibold text-ink">Draft content.</span>{" "}
-          This brand story is placeholder copy and must be reviewed by the
-          Sneaker Vault GH team before launch.
-        </aside>
-
-        <section className="grid gap-10 py-12 lg:grid-cols-[0.7fr_1.3fr] lg:gap-20 lg:py-20">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">
-            Our approach
-          </p>
-          <div className="max-w-3xl space-y-7 text-xl leading-8 tracking-[-0.02em] text-ink sm:text-2xl sm:leading-9">
-            <p>
-              We believe buying sneakers should feel clear and considered.
-              That means useful product information, visible size availability,
-              transparent pricing, and a checkout experience that gets out of
-              the way.
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">
+              Brand story
             </p>
+            <h2
+              id="brand-story-heading"
+              className="mt-4 text-2xl font-medium tracking-[-0.03em]"
+            >
+              Sneakers are part of your identity.
+            </h2>
+          </div>
+          <div className="max-w-3xl space-y-7 text-xl leading-8 tracking-[-0.02em] text-ink sm:text-2xl sm:leading-9">
+            <p>We believe what you wear should feel like you.</p>
             <p>
-              The collection will be managed by a local team, with every
-              product and size updated as inventory changes.
+              Sneaker Vault GH exists to make discovering and owning great
+              sneakers easier, while giving you the freedom to own your style
+              and be yourself.
+            </p>
+            <p className="text-base leading-7 text-muted sm:text-lg sm:leading-8">
+              Born in Ghana, we&rsquo;re building a sneaker destination around
+              thoughtful curation, honest availability and an experience that
+              puts the customer first.
             </p>
           </div>
         </section>
@@ -87,7 +89,7 @@ export default function AboutPage() {
                 id="principles-heading"
                 className="section-title"
               >
-                Built around the essentials.
+                Our principles.
               </h2>
             </div>
           </div>
@@ -112,21 +114,51 @@ export default function AboutPage() {
           </div>
         </section>
 
+        <section
+          aria-labelledby="vision-heading"
+          className="grid gap-10 border-t border-line py-12 lg:grid-cols-[0.7fr_1.3fr] lg:gap-20 lg:py-20"
+        >
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">
+              The vision
+            </p>
+            <h2
+              id="vision-heading"
+              className="mt-4 text-2xl font-medium tracking-[-0.03em]"
+            >
+              We&rsquo;re just getting started.
+            </h2>
+          </div>
+          <p className="max-w-3xl text-xl leading-8 tracking-[-0.02em] text-ink sm:text-2xl sm:leading-9">
+            From campus to the city and eventually beyond Ghana, we&rsquo;re
+            building a sneaker community where people can discover their next
+            pair and wear it their way.
+          </p>
+        </section>
+
         <section className="mt-4 flex flex-col gap-8 bg-ink px-6 py-10 text-white sm:px-10 sm:py-12 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="mb-3 text-xs font-semibold uppercase tracking-[0.22em] text-muted-soft">
-              Need to know more?
+              Find your next pair.
             </p>
             <h2 className="max-w-2xl section-title">
-              Talk to the Sneaker Vault GH team.
+              Shop the collection.
             </h2>
           </div>
-          <Link
-            href="/contact"
-            className="inline-flex min-h-12 w-fit items-center justify-center border border-white px-6 text-sm font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-white hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-          >
-            Contact us
-          </Link>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <Link
+              href="/shop"
+              className="inline-flex min-h-12 w-fit items-center justify-center border border-white px-6 text-sm font-semibold uppercase tracking-[0.14em] transition-colors hover:bg-white hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+            >
+              Shop the collection &rarr;
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex min-h-12 w-fit items-center text-sm font-semibold uppercase tracking-[0.14em] text-white/80 underline decoration-1 underline-offset-8 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+            >
+              Contact us
+            </Link>
+          </div>
         </section>
       </div>
     </main>

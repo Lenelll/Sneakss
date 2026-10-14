@@ -1,27 +1,38 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import {
+  SUPPORT_EMAIL,
+  SUPPORT_HOURS,
+  SUPPORT_PHONE_DISPLAY,
+  SUPPORT_PHONE_E164,
+  SUPPORT_WHATSAPP_URL,
+} from "@/lib/site-contact";
+
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Contact Sneaker Vault GH for help with products, orders, payments, or general enquiries.",
+    "Contact Sneaker Vault GH by phone, WhatsApp or email for help with products, orders, payments, returns or general enquiries.",
 };
 
 const contactMethods = [
   {
-    label: "Email",
-    value: "[Customer support email to be confirmed]",
-    note: "For product, payment, and order questions.",
-  },
-  {
     label: "Phone",
-    value: "[Customer support number to be confirmed]",
-    note: "For support during published business hours.",
+    value: SUPPORT_PHONE_DISPLAY,
+    href: `tel:${SUPPORT_PHONE_E164}`,
+    note: "Call us during support hours for help with products and orders.",
   },
   {
     label: "WhatsApp",
-    value: "[Official WhatsApp number to be confirmed]",
-    note: "For quick questions and order follow-up.",
+    value: SUPPORT_PHONE_DISPLAY,
+    href: SUPPORT_WHATSAPP_URL,
+    note: "Message us on WhatsApp for quick questions and order follow-up.",
+  },
+  {
+    label: "Email",
+    value: SUPPORT_EMAIL,
+    href: `mailto:${SUPPORT_EMAIL}`,
+    note: "For product, payment, order and return queries.",
   },
 ];
 
@@ -44,15 +55,6 @@ export default function ContactPage() {
           </p>
         </header>
 
-        <aside
-          aria-label="Draft content notice"
-          className="my-10 border-l-2 border-ink bg-surface-2 px-5 py-4 text-sm leading-6 text-muted sm:px-6"
-        >
-          <span className="font-semibold text-ink">Draft content.</span>{" "}
-          Contact details and support hours are placeholders until the client
-          approves the official information.
-        </aside>
-
         <section
           aria-labelledby="contact-options-heading"
           className="py-8 lg:py-14"
@@ -74,9 +76,15 @@ export default function ContactPage() {
                     0{index + 1}
                   </span>
                 </div>
-                <p className="mt-12 break-words text-xl font-medium leading-7 tracking-[-0.025em]">
+                <a
+                  href={method.href}
+                  className="mt-12 break-words text-xl font-medium leading-7 tracking-[-0.025em] underline decoration-1 underline-offset-4 transition-colors hover:text-muted focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
+                  {...(method.href.startsWith("https://")
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
+                >
                   {method.value}
-                </p>
+                </a>
                 <p className="mt-3 text-sm leading-6 text-muted">
                   {method.note}
                 </p>
@@ -91,11 +99,14 @@ export default function ContactPage() {
               Support hours
             </p>
             <h2 className="text-3xl font-medium tracking-[-0.04em]">
-              [Days and hours to be confirmed]
+              {SUPPORT_HOURS.days}
             </h2>
+            <p className="mt-2 text-3xl font-medium tracking-[-0.04em] text-muted">
+              {SUPPORT_HOURS.time}
+            </p>
             <p className="mt-5 max-w-lg text-sm leading-6 text-muted">
-              Messages received outside the published support window will be
-              answered when the team is next available.
+              Messages received outside these hours will be answered when the
+              team is next available.
             </p>
           </div>
 
@@ -119,7 +130,7 @@ export default function ContactPage() {
             Shipping information
           </Link>
           <Link className="underline underline-offset-4" href="/policies/returns">
-            Returns policy
+            Returns &amp; refunds
           </Link>
           <Link className="underline underline-offset-4" href="/policies/privacy">
             Privacy policy

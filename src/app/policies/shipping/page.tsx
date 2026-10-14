@@ -16,13 +16,6 @@ const sections = [
     ],
   },
   {
-    title: "Delivery arrangements",
-    body: [
-      "Delivery is fulfilled outside this web app by the store’s delivery partner. The storefront does not currently calculate delivery options, charges, or estimated arrival times.",
-      "[Confirm how and when the delivery partner will contact customers, collect any delivery fee, and provide an estimated timeline.]",
-    ],
-  },
-  {
     title: "Order processing",
     body: [
       "Paid orders will be reviewed and prepared before they are handed to the store’s delivery partner. Customers should receive an update using the contact information supplied at checkout.",

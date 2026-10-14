@@ -15,6 +15,10 @@ export const SUPPORT_WHATSAPP_URL = "https://wa.me/233556166330";
 
 export const SUPPORT_EMAIL = "sneakervaultghana@gmail.com";
 
+export const TIKTOK_HANDLE = "@sneakervaultghana";
+
+export const TIKTOK_URL = "https://www.tiktok.com/@sneakervaultghana?_r=1";
+
 export const SUPPORT_HOURS = {
   days: "Monday – Saturday",
   time: "9am – 6pm",

@@ -197,11 +197,11 @@ export function ProductDetail({
             </p>
           </div>
 
-          <p className="mt-5 text-base leading-7 text-muted">
-            {product.description}
-          </p>
-
-          <div className="mt-8 border-t border-line pt-6">
+          {/*
+            Size selection and add-to-bag sit directly under the price so a
+            shopper can act without scrolling; the description follows.
+          */}
+          <div className="mt-6 border-t border-line pt-6">
             <div className="mb-4 flex items-center justify-between gap-4">
               <h2 className="text-sm font-bold">Select EU size</h2>
               <a
@@ -332,6 +332,21 @@ export function ProductDetail({
               </p>
             ) : null}
           </div>
+
+          <section
+            aria-labelledby="product-description-heading"
+            className="mt-6 border-t border-line pt-6"
+          >
+            <h2
+              id="product-description-heading"
+              className="mb-3 text-sm font-bold"
+            >
+              Product description
+            </h2>
+            <p className="text-base leading-7 text-muted">
+              {product.description}
+            </p>
+          </section>
 
           <ul className="mt-5 grid gap-2 sm:grid-cols-3">
             {[

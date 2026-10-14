@@ -190,8 +190,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             </Link>
           </p>
           <p className="mt-4 text-xs leading-5 text-muted">
-            By continuing, you agree to the store&apos;s privacy policy and
-            terms.
+            By continuing, you agree to the store&apos;s privacy policy.
           </p>
         </div>
       </section>

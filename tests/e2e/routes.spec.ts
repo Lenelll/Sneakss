@@ -13,7 +13,6 @@ const routes = [
   { path: "/policies/shipping", heading: null },
   { path: "/policies/returns", heading: null },
   { path: "/policies/privacy", heading: null },
-  { path: "/policies/terms", heading: null },
 ] as const;
 
 for (const route of routes) {

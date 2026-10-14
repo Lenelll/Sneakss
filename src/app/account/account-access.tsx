@@ -194,8 +194,7 @@ export function AccountAccess({
       )}
 
       <p className="mt-5 text-xs leading-5 text-muted">
-        By continuing, customers agree to the store&apos;s privacy policy and
-        terms.
+        By continuing, customers agree to the store&apos;s privacy policy.
       </p>
     </div>
   );

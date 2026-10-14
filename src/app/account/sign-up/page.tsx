@@ -188,8 +188,7 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
             </Link>
           </p>
           <p className="mt-4 text-xs leading-5 text-muted">
-            By continuing, you agree to the store&apos;s privacy policy and
-            terms.
+            By continuing, you agree to the store&apos;s privacy policy.
           </p>
         </div>
       </section>

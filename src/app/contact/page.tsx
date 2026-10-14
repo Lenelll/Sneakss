@@ -7,6 +7,8 @@ import {
   SUPPORT_PHONE_DISPLAY,
   SUPPORT_PHONE_E164,
   SUPPORT_WHATSAPP_URL,
+  TIKTOK_HANDLE,
+  TIKTOK_URL,
 } from "@/lib/site-contact";
 
 export const metadata: Metadata = {
@@ -33,6 +35,12 @@ const contactMethods = [
     value: SUPPORT_EMAIL,
     href: `mailto:${SUPPORT_EMAIL}`,
     note: "For product, payment, order and return queries.",
+  },
+  {
+    label: "TikTok",
+    value: TIKTOK_HANDLE,
+    href: TIKTOK_URL,
+    note: "Follow us for new pairs, drops and behind-the-scenes.",
   },
 ];
 
@@ -62,11 +70,11 @@ export default function ContactPage() {
           <h2 id="contact-options-heading" className="sr-only">
             Contact options
           </h2>
-          <div className="grid border-t border-line lg:grid-cols-3">
+          <div className="grid border-t border-line md:grid-cols-2 lg:grid-cols-4">
             {contactMethods.map((method, index) => (
               <article
                 key={method.label}
-                className="flex min-h-64 flex-col border-b border-line py-7 lg:border-r lg:px-8 lg:first:pl-0 lg:last:border-r-0"
+                className="flex min-h-64 flex-col border-b border-line py-7 md:border-r md:px-6 md:even:border-r-0 lg:px-7 lg:even:border-r lg:first:pl-0 lg:last:border-r-0"
               >
                 <div className="mb-auto flex items-center justify-between">
                   <h3 className="text-sm font-semibold uppercase tracking-[0.18em]">

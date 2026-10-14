@@ -18,7 +18,6 @@ const policyLinks = [
   { href: "/policies/shipping", label: "Shipping" },
   { href: "/policies/returns", label: "Returns" },
   { href: "/policies/privacy", label: "Privacy" },
-  { href: "/policies/terms", label: "Terms" },
 ] as const;
 
 export function SiteFooter() {
